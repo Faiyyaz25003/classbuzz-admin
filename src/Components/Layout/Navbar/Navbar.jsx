@@ -1,5 +1,4 @@
 
-
 // app/components/Navbar.jsx
 "use client";
 import { useState, useEffect } from "react";
@@ -84,8 +83,8 @@ export default function Navbar() {
       className={`fixed top-0 right-0 z-30 transition-all duration-300 lg:left-80 left-0
         ${
           isScrolled
-            ? "bg-white/95 backdrop-blur-md shadow-lg"
-            : "bg-gradient-to-r from-white to-cyan-50/50"
+            ? "bg-[#1e7a8c]/95 backdrop-blur-md shadow-lg"
+            : "bg-gradient-to-r from-[#1e7a8c] to-[#2596ad]"
         }`}
     >
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
@@ -96,13 +95,13 @@ export default function Navbar() {
             <div className="hidden md:flex flex-1 max-w-2xl">
               <div className="relative w-full group">
                 <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1e88a8] transition-colors"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 group-focus-within:text-white transition-colors"
                   size={22}
                 />
                 <input
                   type="text"
                   placeholder="Search anything..."
-                  className="w-full pl-14 pr-6 py-4 text-lg bg-gray-50 border-2 border-transparent rounded-2xl focus:border-[#1e88a8] focus:bg-white focus:outline-none transition-all duration-300"
+                  className="w-full pl-14 pr-6 py-4 text-lg bg-white/10 border-2 border-white/20 text-white placeholder-white/70 rounded-2xl focus:border-white/40 focus:bg-white/20 focus:outline-none transition-all duration-300"
                 />
               </div>
             </div>
@@ -111,7 +110,7 @@ export default function Navbar() {
           {/* Right Section - Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Mobile Search Button */}
-            <button className="md:hidden text-gray-600 hover:text-[#1e88a8] hover:bg-cyan-50 p-2 rounded-lg transition-all">
+            <button className="md:hidden text-white/90 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all">
               <Search size={20} />
             </button>
 
@@ -119,7 +118,7 @@ export default function Navbar() {
             <button
               title="Register Student"
               onClick={() => setIsStudentModalOpen(true)}
-              className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-cyan-50 text-gray-600 hover:text-[#1e88a8] transition-all duration-300"
+              className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-all duration-300"
             >
               <UserPlus size={20} />
             </button>
@@ -128,7 +127,7 @@ export default function Navbar() {
             <div className="relative notification-dropdown">
               <button
                 onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-cyan-50 text-gray-600 hover:text-[#1e88a8] transition-all duration-300"
+                className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 text-white/90 hover:text-white transition-all duration-300"
               >
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
@@ -191,20 +190,20 @@ export default function Navbar() {
               <div className="relative inline-flex items-center">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl hover:bg-cyan-50 transition-all duration-300 group"
+                  className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 group"
                 >
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center shadow-md relative">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center shadow-md relative">
                     <User size={20} className="text-white" />
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-semibold text-gray-800">
+                    <p className="text-sm font-semibold text-white">
                       Faiyyaz Khan
                     </p>
-                    <p className="text-xs text-gray-500">Administrator</p>
+                    <p className="text-xs text-white/80">Administrator</p>
                   </div>
                   <ChevronDown
                     size={16}
-                    className={`hidden sm:block text-gray-500 transition-transform duration-300 ${
+                    className={`hidden sm:block text-white/80 transition-transform duration-300 ${
                       isProfileOpen ? "rotate-180" : ""
                     }`}
                   />
