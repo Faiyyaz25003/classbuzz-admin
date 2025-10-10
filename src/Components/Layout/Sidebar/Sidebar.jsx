@@ -12,12 +12,14 @@ import {
   ChevronRight,
   Menu,
   X,
+  UserPlus,
 } from "lucide-react";
 
 import Dashboard from "@/Components/Dashboard/Dashboard";
 // import other components
 import Attendance from "@/Components/Attendance/Attendance";
 import Leave from "@/Components/Leave/Leave";
+import UserList from "@/Components/UserList/UserList";
 
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -39,6 +41,7 @@ export default function Sidebar() {
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
+    { id: "user", name: "User", icon: UserPlus },
     { id: "leave", name: "Apply Leave", icon: Clock },
     { id: "diet", name: "Diet", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
@@ -58,8 +61,10 @@ export default function Sidebar() {
         return <Attendance />;
       case "leave":
         return <Leave />;
+      case "user":
+        return <UserList/>;
       // Add more cases as needed
-      default:
+      default: 
         return <Dashboard />;
     }
   };
