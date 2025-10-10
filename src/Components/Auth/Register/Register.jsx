@@ -8,13 +8,16 @@ import {
   UserPlus,
   Building2,
   Briefcase,
+  User,
 } from "lucide-react";
 import axios from "axios";
+
 export default function RegisterForm() {
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
+    gender: "",
     departments: [""],
     positions: [""],
     joinDate: "",
@@ -96,35 +99,32 @@ export default function RegisterForm() {
     }
   };
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-   // Prepare payload (merge custom fields)
-   const payload = {
-     ...form,
-     departments: form.departments.map((dep, i) =>
-       dep === "Other (Custom)" ? customDepartments[i] : dep
-     ),
-     positions: form.positions.map((pos, i) =>
-       pos === "Other (Custom)" ? customPositions[i] : pos
-     ),
-   };
+    const payload = {
+      ...form,
+      departments: form.departments.map((dep, i) =>
+        dep === "Other (Custom)" ? customDepartments[i] : dep
+      ),
+      positions: form.positions.map((pos, i) =>
+        pos === "Other (Custom)" ? customPositions[i] : pos
+      ),
+    };
 
-   try {
-     const res = await axios.post(
-       "http://localhost:5000/api/users/register",
-       payload
-     );
-     alert(res.data.message);
-   } catch (err) {
-     // Safe access
-     const message =
-       err?.response?.data?.message || err.message || "Registration failed";
-     alert(message);
-   }
- };
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/users/register",
+        payload
+      );
+      alert(res.data.message);
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || err.message || "Registration failed";
+      alert(message);
+    }
+  };
 
-  
   const addField = (type) => {
     if (type === "department") {
       setForm({ ...form, departments: [...form.departments, ""] });
@@ -200,6 +200,48 @@ export default function RegisterForm() {
             placeholder="Enter phone number"
             className="w-full p-3 focus:outline-none rounded-lg"
           />
+        </div>
+      </div>
+
+      {/* Gender */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Gender
+        </label>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="gender"
+              value="Male"
+              checked={form.gender === "Male"}
+              onChange={handleChange}
+              className="accent-blue-600"
+            />
+            <span>Male</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="gender"
+              value="Female"
+              checked={form.gender === "Female"}
+              onChange={handleChange}
+              className="accent-pink-500"
+            />
+            <span>Female</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="gender"
+              value="Other"
+              checked={form.gender === "Other"}
+              onChange={handleChange}
+              className="accent-gray-600"
+            />
+            <span>Other</span>
+          </label>
         </div>
       </div>
 
@@ -356,4 +398,4 @@ export default function RegisterForm() {
       </button>
     </div>
   );
-};
+}
