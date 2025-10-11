@@ -18,7 +18,7 @@ import {
 import Dashboard from "@/Components/Dashboard/Dashboard";
 // import other components
 import Attendance from "@/Components/Attendance/Attendance";
-import Leave from "@/Components/Leave/Leave";
+import Leave from "@/Components/LeaveList/LeaveList";
 import UserList from "@/Components/UserList/UserList";
 
 export default function Sidebar() {
