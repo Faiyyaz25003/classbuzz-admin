@@ -8,7 +8,6 @@ import {
   UserPlus,
   Building2,
   Briefcase,
-  User,
 } from "lucide-react";
 import axios from "axios";
 
@@ -153,111 +152,72 @@ export default function RegisterForm() {
       </h2>
 
       {/* Name */}
-      <div className="mb-4">
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Full Name
-        </label>
+      <input
+        type="text"
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Full Name"
+        className="w-full border p-3 mb-4 rounded-lg"
+      />
+
+      {/* Email */}
+      <div className="flex items-center border rounded-lg mb-4">
+        <Mail className="ml-3 text-gray-400" />
         <input
-          type="text"
-          name="name"
-          value={form.name}
+          type="email"
+          name="email"
+          value={form.email}
           onChange={handleChange}
-          placeholder="Enter full name"
-          className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500"
+          placeholder="Email Address"
+          className="w-full p-3 focus:outline-none rounded-lg"
         />
       </div>
 
-      {/* Email */}
-      <div className="mb-4">
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Email
-        </label>
-        <div className="flex items-center border rounded-lg">
-          <Mail className="ml-3 text-gray-400" />
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Enter email address"
-            className="w-full p-3 focus:outline-none rounded-lg"
-          />
-        </div>
-      </div>
-
       {/* Phone */}
-      <div className="mb-4">
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Phone Number
-        </label>
-        <div className="flex items-center border rounded-lg">
-          <Phone className="ml-3 text-gray-400" />
-          <input
-            type="text"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            placeholder="Enter phone number"
-            className="w-full p-3 focus:outline-none rounded-lg"
-          />
-        </div>
+      <div className="flex items-center border rounded-lg mb-4">
+        <Phone className="ml-3 text-gray-400" />
+        <input
+          type="text"
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          placeholder="Phone Number"
+          className="w-full p-3 focus:outline-none rounded-lg"
+        />
       </div>
 
       {/* Gender */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Gender
-        </label>
-        <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="gender"
-              value="Male"
-              checked={form.gender === "Male"}
-              onChange={handleChange}
-              className="accent-blue-600"
-            />
-            <span>Male</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="gender"
-              value="Female"
-              checked={form.gender === "Female"}
-              onChange={handleChange}
-              className="accent-pink-500"
-            />
-            <span>Female</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="gender"
-              value="Other"
-              checked={form.gender === "Other"}
-              onChange={handleChange}
-              className="accent-gray-600"
-            />
-            <span>Other</span>
-          </label>
+        <label className="block font-semibold mb-2">Gender</label>
+        <div className="flex gap-6">
+          {["Male", "Female", "Other"].map((g) => (
+            <label key={g} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="gender"
+                value={g}
+                checked={form.gender === g}
+                onChange={handleChange}
+                className="accent-blue-600"
+              />
+              {g}
+            </label>
+          ))}
         </div>
       </div>
 
       {/* Departments */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Department(s)
-        </label>
-        {form.departments.map((dept, index) => (
-          <div key={index} className="flex gap-2 mb-2 items-center">
+        <label className="block font-semibold mb-2">Departments</label>
+        {form.departments.map((dept, i) => (
+          <div key={i} className="flex gap-2 mb-2 items-center">
             <Building2 className="text-gray-400 w-5 h-5" />
-            {!customMode.department[index] ? (
+            {!customMode.department[i] ? (
               <select
                 value={dept}
-                onChange={(e) => handleChange(e, "department", index)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleChange(e, "department", i)}
+                className="w-full p-3 border rounded-lg"
               >
                 <option value="">Select Department</option>
                 {departmentsList.map((d) => (
@@ -266,13 +226,13 @@ export default function RegisterForm() {
                   </option>
                 ))}
               </select>
-            ) : customMode.department[index] === "pending" ? (
+            ) : customMode.department[i] === "pending" ? (
               <button
                 type="button"
                 onClick={() =>
                   setCustomMode({
                     ...customMode,
-                    department: { ...customMode.department, [index]: true },
+                    department: { ...customMode.department, [i]: true },
                   })
                 }
                 className="text-blue-600 font-semibold hover:underline"
@@ -283,15 +243,15 @@ export default function RegisterForm() {
               <input
                 type="text"
                 placeholder="Enter custom department"
-                value={customDepartments[index] || ""}
-                onChange={(e) => handleChange(e, "customDepartment", index)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                value={customDepartments[i] || ""}
+                onChange={(e) => handleChange(e, "customDepartment", i)}
+                className="w-full p-3 border rounded-lg"
               />
             )}
             {form.departments.length > 1 && (
               <button
                 type="button"
-                onClick={() => removeField("department", index)}
+                onClick={() => removeField("department", i)}
                 className="text-red-500 font-bold"
               >
                 X
@@ -310,17 +270,15 @@ export default function RegisterForm() {
 
       {/* Positions */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Position(s)
-        </label>
-        {form.positions.map((pos, index) => (
-          <div key={index} className="flex gap-2 mb-2 items-center">
+        <label className="block font-semibold mb-2">Positions</label>
+        {form.positions.map((pos, i) => (
+          <div key={i} className="flex gap-2 mb-2 items-center">
             <Briefcase className="text-gray-400 w-5 h-5" />
-            {!customMode.position[index] ? (
+            {!customMode.position[i] ? (
               <select
                 value={pos}
-                onChange={(e) => handleChange(e, "position", index)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => handleChange(e, "position", i)}
+                className="w-full p-3 border rounded-lg"
               >
                 <option value="">Select Position</option>
                 {positionsList.map((p) => (
@@ -329,13 +287,13 @@ export default function RegisterForm() {
                   </option>
                 ))}
               </select>
-            ) : customMode.position[index] === "pending" ? (
+            ) : customMode.position[i] === "pending" ? (
               <button
                 type="button"
                 onClick={() =>
                   setCustomMode({
                     ...customMode,
-                    position: { ...customMode.position, [index]: true },
+                    position: { ...customMode.position, [i]: true },
                   })
                 }
                 className="text-blue-600 font-semibold hover:underline"
@@ -346,15 +304,15 @@ export default function RegisterForm() {
               <input
                 type="text"
                 placeholder="Enter custom position"
-                value={customPositions[index] || ""}
-                onChange={(e) => handleChange(e, "customPosition", index)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                value={customPositions[i] || ""}
+                onChange={(e) => handleChange(e, "customPosition", i)}
+                className="w-full p-3 border rounded-lg"
               />
             )}
             {form.positions.length > 1 && (
               <button
                 type="button"
-                onClick={() => removeField("position", index)}
+                onClick={() => removeField("position", i)}
                 className="text-red-500 font-bold"
               >
                 X
@@ -373,9 +331,7 @@ export default function RegisterForm() {
 
       {/* Join Date */}
       <div className="mb-6">
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Joining Date
-        </label>
+        <label className="block font-semibold mb-2">Joining Date</label>
         <div className="flex items-center border rounded-lg">
           <Calendar className="ml-3 text-gray-400" />
           <input
@@ -388,11 +344,11 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <button
         type="submit"
         onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-all"
+        className="w-full bg-blue-600 text-white py-3 font-semibold rounded-lg hover:bg-blue-700 transition-all"
       >
         Register
       </button>

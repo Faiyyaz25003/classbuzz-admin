@@ -7,7 +7,7 @@ const Leave = () => {
   // Fetch all leave requests
   const fetchLeaves = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/leave");
+      const res = await axios.get("http://localhost:5000/api/leaves");
       setLeaves(res.data);
     } catch (error) {
       console.error("Error fetching leaves:", error);
