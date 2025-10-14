@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -7,7 +8,7 @@ const Leave = () => {
   // Fetch all leave requests from backend
   const fetchLeaves = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/leave"); // ✅ Correct endpoint
+      const res = await axios.get("http://localhost:5000/api/leave");
       setLeaves(res.data);
     } catch (error) {
       console.error("Error fetching leaves:", error);
@@ -17,14 +18,27 @@ const Leave = () => {
   // Handle Accept / Reject status change
   const handleStatusChange = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/leave/${id}`, { status }); // ✅ We'll add this route in backend
+      await axios.put(`http://localhost:5000/api/leave/${id}`, { status });
       alert(`Leave ${status} successfully!`);
-      fetchLeaves(); // refresh the list
+      fetchLeaves();
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update leave status.");
     }
   };
+
+  // Handle Delete leave
+const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this leave?")) return;
+  try {
+    await axios.delete(`http://localhost:5000/api/leave/${id}`);
+    alert("Leave deleted successfully!");
+    fetchLeaves();
+  } catch (error) {
+    console.error("Error deleting leave:", error);
+    alert("Failed to delete leave.");
+  }
+};
 
   useEffect(() => {
     fetchLeaves();
@@ -88,14 +102,14 @@ const Leave = () => {
                   >
                     {leave.status}
                   </td>
-                  <td className="p-3 border">
-                    {leave.status === "Pending" ? (
+                  <td className="p-3 border flex flex-col gap-2">
+                    {leave.status === "Pending" && (
                       <>
                         <button
                           onClick={() =>
                             handleStatusChange(leave._id, "Accepted")
                           }
-                          className="bg-green-500 text-white px-3 py-1 rounded mr-2 hover:bg-green-600"
+                          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                         >
                           Accept
                         </button>
@@ -108,9 +122,13 @@ const Leave = () => {
                           Reject
                         </button>
                       </>
-                    ) : (
-                      <span className="italic text-gray-500">No Action</span>
                     )}
+                    <button
+                      onClick={() => handleDelete(leave._id)}
+                      className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
