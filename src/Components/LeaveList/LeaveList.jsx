@@ -40,7 +40,7 @@ const Leave = () => {
         <table className="min-w-full border border-gray-300 rounded-xl">
           <thead>
             <tr className="bg-gradient-to-r from-[#0f4c5c] via-[#1e88a8] to-[#2596be] text-white">
-              <th className="p-3 border">Employee</th>
+              <th className="p-3 border">User Name</th>
               <th className="p-3 border">Approver</th>
               <th className="p-3 border">Leave Type</th>
               <th className="p-3 border">Reason</th>
