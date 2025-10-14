@@ -42,7 +42,7 @@ export default function Sidebar() {
     { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
     { id: "user", name: "User", icon: UserPlus },
-    { id: "leave", name: "Apply Leave", icon: Clock },
+    { id: "leave", name: "Leave Management", icon: Clock },
     { id: "diet", name: "Diet", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "documents", name: "Documents", icon: FileText },
