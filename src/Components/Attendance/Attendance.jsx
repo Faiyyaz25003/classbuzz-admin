@@ -115,10 +115,10 @@ const PunchinHistory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto ">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-6">
+          <div className="bg-gradient-to-r from-[#0f4c5c] via-[#1e88a8] to-[#2596be] p-6">
             <h1 className="text-3xl font-bold text-white text-center">
               ATTENDANCE RECORDS
             </h1>
@@ -208,7 +208,7 @@ const PunchinHistory = () => {
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gradient-to-r from-indigo-600 to-blue-500">
+                  <tr className="bg-gradient-to-r from-[#0f4c5c] via-[#1e88a8] to-[#2596be]">
                     <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
                       Date
                     </th>
@@ -265,7 +265,7 @@ const PunchinHistory = () => {
                       <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => openModal(record)}
-                          className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-600 transition-all shadow-md text-sm font-semibold"
+                          className="bg-gradient-to-r from-[#0f4c5c] via-[#1e88a8] to-[#2596be] text-white px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-blue-600 transition-all shadow-md text-sm font-semibold"
                         >
                           Photo
                         </button>
@@ -310,59 +310,167 @@ const PunchinHistory = () => {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-8 space-y-6">
               {/* Punch In Section */}
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  Punch In
-                </h3>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200 shadow-lg">
+                <div className="flex items-start gap-6">
+                  {selectedRecord.inPhoto ? (
+                    <div className="relative">
+                      <img
+                        src={selectedRecord.inPhoto}
+                        alt="Punch In"
+                        className="w-32 h-32 rounded-2xl object-cover border-4 border-green-300 shadow-xl"
+                      />
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-2 shadow-lg">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 border-4 border-gray-300 shadow-lg">
+                      <svg
+                        className="w-12 h-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  )}
 
-                <div className="text-3xl font-bold text-gray-900 mb-2">
-                  {selectedRecord.inTime || "-"}
-                </div>
-
-                <div className="text-gray-600 mb-4">
-                  {selectedRecord.inLocation || "Location not available"}
-                </div>
-
-                {selectedRecord.inPhoto ? (
-                  <img
-                    src={selectedRecord.inPhoto}
-                    alt="Punch In"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-indigo-200"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                    No Photo
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">
+                        Check In
+                      </div>
+                    </div>
+                    <div className="text-5xl font-black text-green-700 mb-2 tracking-tight">
+                      {selectedRecord.inTime || "-"}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <svg
+                        className="w-4 h-4 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      <span className="font-medium">
+                        {selectedRecord.inLocation || "Location not available"}
+                      </span>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Punch Out Section */}
-              <div className="pb-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  Punch Out
-                </h3>
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 border-2 border-orange-200 shadow-lg">
+                <div className="flex items-start gap-6">
+                  {selectedRecord.outPhoto ? (
+                    <div className="relative">
+                      <img
+                        src={selectedRecord.outPhoto}
+                        alt="Punch Out"
+                        className="w-32 h-32 rounded-2xl object-cover border-4 border-orange-300 shadow-xl"
+                      />
+                      <div className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-2 shadow-lg">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 17l-5-5m0 0l5-5m-5 5h12"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 border-4 border-gray-300 shadow-lg">
+                      <svg
+                        className="w-12 h-12"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  )}
 
-                <div className="text-3xl font-bold text-gray-900 mb-2">
-                  {selectedRecord.outTime || "-"}
-                </div>
-
-                <div className="text-gray-600 mb-4">
-                  {selectedRecord.outLocation || "Location not available"}
-                </div>
-
-                {selectedRecord.outPhoto ? (
-                  <img
-                    src={selectedRecord.outPhoto}
-                    alt="Punch Out"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-indigo-200"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                    No Photo
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">
+                        Check Out
+                      </div>
+                    </div>
+                    <div className="text-5xl font-black text-orange-700 mb-2 tracking-tight">
+                      {selectedRecord.outTime || "-"}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
+                      <svg
+                        className="w-4 h-4 text-orange-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      <span className="font-medium">
+                        {selectedRecord.outLocation || "Location not available"}
+                      </span>
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
