@@ -114,8 +114,8 @@ const PunchinHistory = () => {
   const stats = getStats();
 
   return (
-    <div className="min-h-screen ml-[320px] bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto mt-[70px]">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-7xl mx-auto ">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
           <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-6">
