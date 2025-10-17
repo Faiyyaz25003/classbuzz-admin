@@ -42,8 +42,10 @@ export default function Sidebar() {
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
     { id: "user", name: "User", icon: UserPlus },
     { id: "leave", name: "Leave Management", icon: Clock },
-    { id: "diet", name: "Diet", icon: FileText },
+    { id: "event", name: "Event", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
+    { id: "record", name: "Recorded Lecture", icon: FileText },
+    { id: "courses", name: "Courses", icon: FileText },
     { id: "documents", name: "Documents", icon: FileText },
   ];
 
@@ -125,23 +127,6 @@ export default function Sidebar() {
             </div>
           )}
         </div>
-
-        {/* User Profile */}
-        {(!isCollapsed || isMobile) && (
-          <div className="mx-4 mb-4 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/15 transition-all duration-300">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
-                <User size={24} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">Welcome Back!</p>
-                <p className="text-xs text-cyan-200/80 truncate">
-                  Faiyyaz Khan
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Navigation */}
         <nav className="flex flex-col px-4 gap-2 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20">
