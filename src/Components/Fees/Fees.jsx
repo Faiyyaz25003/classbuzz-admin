@@ -83,7 +83,15 @@ export default function Fees() {
   };
 
   // Update fee with cumulative logic
-  const handleSubmitFee = (userId, amount, installment) => {
+const handleSubmitFee = async (userId, amount, installment) => {
+  try {
+    const res = await axios.post("http://localhost:5000/api/fees", {
+      userId,
+      amount,
+      installment,
+    });
+
+    // Update UI after saving
     setUsers((prev) =>
       prev.map((u) => {
         if (u._id === userId) {
@@ -99,8 +107,14 @@ export default function Fees() {
         return u;
       })
     );
+
     setOpenFormId(null);
-  };
+    alert("✅ Fee saved successfully!");
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error saving fee");
+  }
+};
 
   const getInitials = (name) => {
     if (!name) return "?";
