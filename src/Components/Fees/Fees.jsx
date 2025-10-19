@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -49,7 +50,7 @@ export default function Fees() {
     fetchUsers();
   }, []);
 
-  // Pagination & filtering
+  // Filter & Pagination
   const filteredUsers = users
     .filter((user) =>
       user.positions?.some((p) => p === "Student" || p === "Monitor")
@@ -82,40 +83,40 @@ export default function Fees() {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  // Update fee with cumulative logic
-const handleSubmitFee = async (userId, amount, installment) => {
-  try {
-    const res = await axios.post("http://localhost:5000/api/fees", {
-      userId,
-      amount,
-      installment,
-    });
+  // Fee submission (cumulative)
+  const handleSubmitFee = async (userId, amount, installment) => {
+    try {
+      await axios.post("http://localhost:5000/api/fees", {
+        userId,
+        amount,
+        installment,
+      });
 
-    // Update UI after saving
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u._id === userId) {
-          const newAmount = u.feeAmount + parseFloat(amount);
-          const newInstallment = parseInt(installment);
-          return {
-            ...u,
-            feesPaid: true,
-            feeAmount: newAmount,
-            installment: newInstallment,
-          };
-        }
-        return u;
-      })
-    );
+      setUsers((prev) =>
+        prev.map((u) => {
+          if (u._id === userId) {
+            const newAmount = u.feeAmount + parseFloat(amount);
+            const newInstallment = parseInt(installment);
+            return {
+              ...u,
+              feesPaid: true,
+              feeAmount: newAmount,
+              installment: newInstallment,
+            };
+          }
+          return u;
+        })
+      );
 
-    setOpenFormId(null);
-    alert("✅ Fee saved successfully!");
-  } catch (error) {
-    console.error(error);
-    alert("❌ Error saving fee");
-  }
-};
+      setOpenFormId(null);
+      alert("✅ Fee saved successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Error saving fee");
+    }
+  };
 
+  // Helpers
   const getInitials = (name) => {
     if (!name) return "?";
     const parts = name.split(" ");
@@ -196,7 +197,7 @@ const handleSubmitFee = async (userId, amount, installment) => {
           </div>
         </motion.div>
 
-        {/* Statistics Cards */}
+        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -262,7 +263,7 @@ const handleSubmitFee = async (userId, amount, installment) => {
           </motion.div>
         </div>
 
-        {/* Installment Filter Tabs */}
+        {/* Installment Filter */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -289,7 +290,7 @@ const handleSubmitFee = async (userId, amount, installment) => {
           ))}
         </motion.div>
 
-        {/* Table */}
+        {/* Students Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -440,61 +441,14 @@ const handleSubmitFee = async (userId, amount, installment) => {
 
                         {/* Action */}
                         <td className="px-6 py-4">
-                          {openFormId === user._id ? (
-                            <form
-                              className="flex gap-2 items-center"
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                const amount = e.target.amount.value;
-                                const installment = e.target.installment.value;
-                                handleSubmitFee(user._id, amount, installment);
-                              }}
-                            >
-                              <input
-                                name="amount"
-                                type="number"
-                                placeholder="Amount"
-                                required
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm w-24 outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                              <select
-                                name="installment"
-                                required
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="">Select</option>
-                                <option value="1">Installment 1</option>
-                                <option value="2">Installment 2</option>
-                                <option value="3">Installment 3</option>
-                              </select>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                type="submit"
-                                className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium shadow-md"
-                              >
-                                Save
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                type="button"
-                                onClick={() => setOpenFormId(null)}
-                                className="p-2 bg-red-500 text-white rounded-lg shadow-md"
-                              >
-                                <X className="w-4 h-4" />
-                              </motion.button>
-                            </form>
-                          ) : (
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => setOpenFormId(user._id)}
-                              className="p-3 bg-yellow-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
-                            >
-                              <Edit3 className="w-5 h-5" />
-                            </motion.button>
-                          )}
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setOpenFormId(user._id)}
+                            className="p-3 bg-yellow-500 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                          >
+                            <Edit3 className="w-5 h-5" />
+                          </motion.button>
                         </td>
                       </motion.tr>
                     ))}
@@ -548,6 +502,75 @@ const handleSubmitFee = async (userId, amount, installment) => {
             </motion.button>
           </motion.div>
         )}
+
+        {/* Modal Fee Form */}
+        <AnimatePresence>
+          {openFormId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg relative"
+              >
+                <h2 className="text-2xl font-bold mb-4">Fee Payment Form</h2>
+                <button
+                  onClick={() => setOpenFormId(null)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+                >
+                  <X />
+                </button>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const amount = e.target.amount.value;
+                    const installment = e.target.installment.value;
+                    handleSubmitFee(openFormId, amount, installment);
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Amount *
+                    </label>
+                    <input
+                      name="amount"
+                      type="number"
+                      required
+                      className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Installment *
+                    </label>
+                    <select
+                      name="installment"
+                      required
+                      className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select</option>
+                      <option value="1">Installment 1</option>
+                      <option value="2">Installment 2</option>
+                      <option value="3">Installment 3</option>
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-green-500 text-white py-2 rounded-lg font-medium"
+                  >
+                    Save Fee
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
