@@ -1,6 +1,7 @@
 
+
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./Header";
 import StatsGrid from "./StatsGrid";
 import AttendanceChart from "./AttendanceChart";
@@ -12,6 +13,7 @@ import UpcomingEvents from "./UpcomingEvents";
 import { Calendar, Users, BookOpen, TrendingUp } from "lucide-react";
 
 const Dashboard = () => {
+  const [totalStudents, setTotalStudents] = useState("0"); // default value
   const [notifications] = useState([
     {
       id: 1,
@@ -26,6 +28,20 @@ const Dashboard = () => {
       time: "1 hour ago",
     },
   ]);
+
+  // Fetch total students from API
+  useEffect(() => {
+    const fetchTotalStudents = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/users");
+        const data = await response.json();
+        setTotalStudents(data.length); // Assuming API returns an array of users
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    };
+    fetchTotalStudents();
+  }, []);
 
   const attendanceData = [
     { day: "Mon", present: 85, absent: 15 },
@@ -62,7 +78,7 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Total Students",
-      value: "1,248",
+      value: totalStudents,
       icon: Users,
       change: "+12%",
       color: "from-blue-500 to-blue-600",

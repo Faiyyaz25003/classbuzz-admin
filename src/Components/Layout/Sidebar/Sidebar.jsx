@@ -19,6 +19,7 @@ import Dashboard from "@/Components/Dashboard/Dashboard";
 import Attendance from "@/Components/Attendance/Attendance";
 import Leave from "@/Components/LeaveList/LeaveList";
 import UserList from "@/Components/UserList/UserList";
+import Fees from "@/Components/Fees/Fees";
 
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -42,6 +43,7 @@ export default function Sidebar() {
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
     { id: "user", name: "User", icon: UserPlus },
     { id: "leave", name: "Leave Management", icon: Clock },
+    { id: "fees", name: "Fees Record", icon: Clock },
     { id: "event", name: "Event", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
@@ -63,10 +65,11 @@ export default function Sidebar() {
       case "leave":
         return <Leave />;
       case "user":
-        return <UserList/>;
-      // Add more cases as needed
+        return <UserList />;
+      case "fees":
+        return <Fees />;
       default:
-        return <Dashboard />;
+        return <fees />;
     }
   };
 
