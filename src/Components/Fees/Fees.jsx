@@ -643,6 +643,106 @@ export default function Fees() {
           )}
         </AnimatePresence>
 
+        {/* <AnimatePresence>
+          {receiptModalId && selectedReceiptUser && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            >
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg relative"
+              >
+                <h2 className="text-2xl font-bold mb-4">
+                  Fee Receipt - {selectedReceiptUser.name}
+                </h2>
+                <button
+                  onClick={() => setReceiptModalId(null)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+                >
+                  <X />
+                </button>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                      <p className="text-sm text-green-600 font-medium mb-1">
+                        Amount Paid
+                      </p>
+                      <p className="text-2xl font-bold text-green-700">
+                        ₹{selectedReceiptUser.feeAmount}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                      <p className="text-sm text-blue-600 font-medium mb-1">
+                        Installment
+                      </p>
+                      <p className="text-lg font-semibold text-blue-700">
+                        {selectedReceiptUser.installment}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Email:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1 break-all">
+                        {selectedReceiptUser.email}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Phone:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1">
+                        {selectedReceiptUser.phone}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Department:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1">
+                        {selectedReceiptUser.departments?.join(", ") || "—"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Positions:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1">
+                        {selectedReceiptUser.positions?.join(", ")}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start pt-2 border-t border-gray-200">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Payment Date:
+                      </span>
+                      <span className="text-gray-800 text-sm font-semibold flex-1">
+                        {selectedReceiptUser.feeDate
+                          ? new Date(
+                              selectedReceiptUser.feeDate
+                            ).toLocaleDateString()
+                          : "—"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence> */}
+
         <AnimatePresence>
           {receiptModalId && selectedReceiptUser && (
             <motion.div
@@ -721,6 +821,26 @@ export default function Fees() {
                       </span>
                       <span className="text-gray-800 text-sm flex-1">
                         {selectedReceiptUser.positions?.join(", ")}
+                      </span>
+                    </div>
+
+                    {/* ✅ Payment Method */}
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Payment Method:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1">
+                        {selectedReceiptUser.paymentMethod || "—"}
+                      </span>
+                    </div>
+
+                    {/* ✅ Transaction/Ref */}
+                    <div className="flex items-start">
+                      <span className="text-gray-500 text-sm font-medium min-w-[100px]">
+                        Transaction/Ref:
+                      </span>
+                      <span className="text-gray-800 text-sm flex-1">
+                        {selectedReceiptUser.paymentName || "—"}
                       </span>
                     </div>
 
