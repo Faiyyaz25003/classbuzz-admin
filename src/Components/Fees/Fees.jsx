@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -23,11 +24,12 @@ export default function Fees() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [openFormId, setOpenFormId] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentName, setPaymentName] = useState("");
   const [receiptModalId, setReceiptModalId] = useState(null);
   const [installmentFilter, setInstallmentFilter] = useState("All");
   const usersPerPage = 10;
 
-  // Fetch users
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -50,7 +52,6 @@ export default function Fees() {
     fetchUsers();
   }, []);
 
-  // Filter & Pagination
   const filteredUsers = users
     .filter((user) =>
       user.positions?.some((p) => p === "Student" || p === "Monitor")
@@ -71,7 +72,6 @@ export default function Fees() {
     startIndex + usersPerPage
   );
 
-  // Statistics
   const totalStudents = filteredUsers.length;
   const paidStudents = filteredUsers.filter((u) => u.feesPaid).length;
   const totalRevenue = filteredUsers.reduce(
@@ -83,13 +83,20 @@ export default function Fees() {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  // Fee submission (cumulative)
-  const handleSubmitFee = async (userId, amount, installment) => {
+  const handleSubmitFee = async (
+    userId,
+    amount,
+    installment,
+    paymentMethod,
+    paymentName,
+  ) => {
     try {
       await axios.post("http://localhost:5000/api/fees", {
         userId,
         amount,
         installment,
+        paymentMethod,
+        paymentName,
       });
 
       setUsers((prev) =>
@@ -109,6 +116,8 @@ export default function Fees() {
       );
 
       setOpenFormId(null);
+      setPaymentMethod("");
+      setPaymentName("");
       alert("✅ Fee saved successfully!");
     } catch (error) {
       console.error(error);
@@ -116,7 +125,6 @@ export default function Fees() {
     }
   };
 
-  // Helpers
   const getInitials = (name) => {
     if (!name) return "?";
     const parts = name.split(" ");
@@ -158,7 +166,6 @@ export default function Fees() {
   return (
     <div className="min-h-screen p-4 md:p-6 lg:p-8 bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -199,7 +206,6 @@ export default function Fees() {
           </div>
         </motion.div>
 
-        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -265,7 +271,6 @@ export default function Fees() {
           </motion.div>
         </div>
 
-        {/* Installment Filter */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -292,7 +297,6 @@ export default function Fees() {
           ))}
         </motion.div>
 
-        {/* Students Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -350,7 +354,6 @@ export default function Fees() {
                         transition={{ delay: index * 0.05 }}
                         className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                       >
-                        {/* Student */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div
@@ -366,7 +369,6 @@ export default function Fees() {
                           </div>
                         </td>
 
-                        {/* Contact */}
                         <td className="px-6 py-4">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -380,12 +382,10 @@ export default function Fees() {
                           </div>
                         </td>
 
-                        {/* Department */}
                         <td className="px-6 py-4 text-gray-700 text-sm">
                           {user.departments?.join(", ") || "—"}
                         </td>
 
-                        {/* Position */}
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2">
                             {user.positions?.map((p) => (
@@ -401,7 +401,6 @@ export default function Fees() {
                           </div>
                         </td>
 
-                        {/* Details */}
                         <td className="px-6 py-4">
                           <div className="space-y-2 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
@@ -417,7 +416,6 @@ export default function Fees() {
                           </div>
                         </td>
 
-                        {/* Fees */}
                         <td className="px-6 py-4">
                           {user.feesPaid ? (
                             <div className="flex items-center gap-2">
@@ -441,7 +439,6 @@ export default function Fees() {
                           )}
                         </td>
 
-                        {/* Action */}
                         <td className="px-6 py-4 flex gap-2">
                           <motion.button
                             whileHover={{ scale: 1.1 }}
@@ -469,7 +466,6 @@ export default function Fees() {
           )}
         </motion.div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -513,14 +509,13 @@ export default function Fees() {
           </motion.div>
         )}
 
-        {/* Modal Fee Form */}
         <AnimatePresence>
           {openFormId && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9 }}
@@ -530,7 +525,11 @@ export default function Fees() {
               >
                 <h2 className="text-2xl font-bold mb-4">Fee Payment Form</h2>
                 <button
-                  onClick={() => setOpenFormId(null)}
+                  onClick={() => {
+                    setOpenFormId(null);
+                    setPaymentMethod("");
+                    setPaymentName("");
+                  }}
                   className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
                 >
                   <X />
@@ -540,7 +539,13 @@ export default function Fees() {
                     e.preventDefault();
                     const amount = e.target.amount.value;
                     const installment = e.target.installment.value;
-                    handleSubmitFee(openFormId, amount, installment);
+                    handleSubmitFee(
+                      openFormId,
+                      amount,
+                      installment,
+                      paymentMethod,
+                      paymentName
+                    );
                   }}
                   className="space-y-4"
                 >
@@ -555,6 +560,7 @@ export default function Fees() {
                       className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Installment *
@@ -570,11 +576,66 @@ export default function Fees() {
                       <option value="3">Installment 3</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Payment Method *
+                    </label>
+                    <select
+                      name="paymentMethod"
+                      required
+                      value={paymentMethod}
+                      className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => {
+                        setPaymentMethod(e.target.value);
+                        if (e.target.value === "Cash") {
+                          setPaymentName("");
+                        }
+                      }}
+                    >
+                      <option value="">Select</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Online">Online</option>
+                    </select>
+                  </div>
+
+                  {(paymentMethod === "Cheque" ||
+                    paymentMethod === "Online") && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        {paymentMethod === "Cheque"
+                          ? "Account Number"
+                          : "Transaction ID / Online Reference"}{" "}
+                        *
+                      </label>
+                      <input
+                        name="paymentName"
+                        type="text"
+                        required
+                        value={paymentName}
+                        onChange={(e) => setPaymentName(e.target.value)}
+                        className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full bg-green-500 text-white py-2 rounded-lg font-medium"
+                    className="w-full bg-green-500 text-white py-2 rounded-lg font-medium hover:bg-green-600 transition-all"
                   >
                     Save Fee
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenFormId(null);
+                      setPaymentMethod("");
+                      setPaymentName("");
+                    }}
+                    className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300 transition-all"
+                  >
+                    Cancel
                   </button>
                 </form>
               </motion.div>
@@ -582,14 +643,13 @@ export default function Fees() {
           )}
         </AnimatePresence>
 
-        {/* Modal Fee Receipt */}
         <AnimatePresence>
           {receiptModalId && selectedReceiptUser && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             >
               <motion.div
                 initial={{ scale: 0.9 }}
