@@ -39,6 +39,8 @@ export default function Fees() {
         feesPaid: u.feesPaid || false,
         feeAmount: u.feeAmount || 0,
         installment: u.installment || 0,
+        paymentMethod: u.paymentMethod || "—",
+        paymentName: u.paymentName || "—",
       }));
       setUsers(usersWithFees);
     } catch (error) {
@@ -743,6 +745,7 @@ export default function Fees() {
           )}
         </AnimatePresence> */}
 
+        {/* ✅ Receipt Modal */}
         <AnimatePresence>
           {receiptModalId && selectedReceiptUser && (
             <motion.div
@@ -760,12 +763,14 @@ export default function Fees() {
                 <h2 className="text-2xl font-bold mb-4">
                   Fee Receipt - {selectedReceiptUser.name}
                 </h2>
+
                 <button
                   onClick={() => setReceiptModalId(null)}
                   className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
                 >
                   <X />
                 </button>
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
@@ -820,11 +825,11 @@ export default function Fees() {
                         Positions:
                       </span>
                       <span className="text-gray-800 text-sm flex-1">
-                        {selectedReceiptUser.positions?.join(", ")}
+                        {selectedReceiptUser.positions?.join(", ") || "—"}
                       </span>
                     </div>
 
-                    {/* ✅ Payment Method */}
+                    {/* ✅ FIXED HERE */}
                     <div className="flex items-start">
                       <span className="text-gray-500 text-sm font-medium min-w-[100px]">
                         Payment Method:
@@ -834,7 +839,6 @@ export default function Fees() {
                       </span>
                     </div>
 
-                    {/* ✅ Transaction/Ref */}
                     <div className="flex items-start">
                       <span className="text-gray-500 text-sm font-medium min-w-[100px]">
                         Transaction/Ref:
