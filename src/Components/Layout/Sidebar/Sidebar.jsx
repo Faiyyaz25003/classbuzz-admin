@@ -15,11 +15,11 @@ import {
 } from "lucide-react";
 
 import Dashboard from "@/Components/Dashboard/Dashboard";
-// import other components
 import Attendance from "@/Components/Attendance/Attendance";
 import Leave from "@/Components/LeaveList/LeaveList";
 import UserList from "@/Components/UserList/UserList";
 import Fees from "@/Components/Fees/Fees";
+import Documents from "@/Components/Documents/Documents";
 
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -68,8 +68,10 @@ export default function Sidebar() {
         return <UserList />;
       case "fees":
         return <Fees />;
+      case "documents":
+        return <Documents />;
       default:
-        return <fees />;
+        return <Fees />;
     }
   };
 
