@@ -1,6 +1,4 @@
 
-
-
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +23,9 @@ export default function Documents() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectUserId, setRejectUserId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const fetchDocuments = async () => {
     try {
@@ -108,17 +109,29 @@ export default function Documents() {
     }
   };
 
-  const handleReject = async (id) => {
-    const reason = prompt("Enter rejection reason (optional):");
-    if (reason === null) return;
+  const openRejectModal = (id) => {
+    setRejectUserId(id);
+    setRejectReason("");
+    setShowRejectModal(true);
+  };
+
+  const closeRejectModal = () => {
+    setShowRejectModal(false);
+    setRejectUserId(null);
+    setRejectReason("");
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectUserId) return;
+
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:5000/api/documents/reject/${id}`,
+        `http://localhost:5000/api/documents/reject/${rejectUserId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason: reason || "" }),
+          body: JSON.stringify({ reason: rejectReason.trim() }),
         }
       );
       const data = await res.json();
@@ -127,6 +140,7 @@ export default function Documents() {
       }
       alert(data.message || "Documents rejected successfully");
       await fetchDocuments();
+      closeRejectModal();
     } catch (error) {
       console.error(error);
       alert(error.message || "Error rejecting documents");
@@ -662,7 +676,7 @@ export default function Documents() {
                           <span>Accept</span>
                         </button>
                         <button
-                          onClick={() => handleReject(user._id)}
+                          onClick={() => openRejectModal(user._id)}
                           disabled={loading}
                           className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white shadow-md hover:shadow-lg transition-all duration-200"
                         >
@@ -678,6 +692,61 @@ export default function Documents() {
           </div>
         )}
       </div>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in">
+            <div className="bg-gradient-to-r from-red-500 to-rose-500 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-3 rounded-xl">
+                  <AlertCircle size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Reject Documents</h2>
+                  <p className="text-white/80 text-sm">
+                    Please provide a reason for rejection
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Rejection Reason
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Enter the reason for rejecting these documents..."
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none transition-all duration-200"
+                rows="4"
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                This reason will be visible to the user
+              </p>
+            </div>
+
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                onClick={closeRejectModal}
+                disabled={loading}
+                className="flex-1 px-6 py-3 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all duration-200 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectSubmit}
+                disabled={loading}
+                className="flex-1 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+              >
+                {loading ? "Rejecting..." : "Confirm Reject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
