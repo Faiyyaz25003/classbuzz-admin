@@ -1,4 +1,6 @@
 
+
+
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -24,7 +26,6 @@ export default function Documents() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 🧾 Fetch all uploaded documents
   const fetchDocuments = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/documents");
@@ -40,17 +41,14 @@ export default function Documents() {
     fetchDocuments();
   }, []);
 
-  // 📥 Download file
   const handleDownload = (id, field) => {
     window.open(`http://localhost:5000/api/documents/download/${id}/${field}`);
   };
 
-  // 👁️ Preview file
   const handlePreview = (id, field) => {
     window.open(`http://localhost:5000/uploads/${id}/${field}`, "_blank");
   };
 
-  // 🗑️ Delete specific document (not full user)
   const handleDeleteDocument = async (id, field) => {
     if (!window.confirm(`Delete ${field} document for this user?`)) return;
     try {
@@ -59,11 +57,9 @@ export default function Documents() {
         `http://localhost:5000/api/documents/delete/${id}/${field}`,
         { method: "DELETE" }
       );
-
       if (!res.ok) throw new Error("Failed to delete document");
       const data = await res.json();
       alert(data.message || "File deleted successfully");
-
       await fetchDocuments();
     } catch (error) {
       console.error(error);
@@ -73,22 +69,16 @@ export default function Documents() {
     }
   };
 
-  // 🗑️ Delete entire user record
   const handleDeleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
-
     try {
       const res = await fetch(`http://localhost:5000/api/documents/${id}`, {
         method: "DELETE",
       });
-
       const data = await res.json();
-
       if (!res.ok)
         throw new Error(data.message || "Failed to delete user record");
-
       alert(data.message || "User deleted successfully");
-
       await fetchDocuments();
     } catch (err) {
       console.error("Delete error:", err);
@@ -96,24 +86,18 @@ export default function Documents() {
     }
   };
 
-  // ✅ Accept user documents
   const handleAccept = async (id) => {
     if (!window.confirm("Accept all documents for this user?")) return;
     try {
       setLoading(true);
       const res = await fetch(
         `http://localhost:5000/api/documents/accept/${id}`,
-        {
-          method: "POST",
-        }
+        { method: "POST" }
       );
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.message || "Failed to accept documents");
       }
-
       alert(data.message || "Documents accepted successfully");
       await fetchDocuments();
     } catch (error) {
@@ -124,30 +108,23 @@ export default function Documents() {
     }
   };
 
-  // ❌ Reject user documents
   const handleReject = async (id) => {
     const reason = prompt("Enter rejection reason (optional):");
-    if (reason === null) return; // User clicked cancel
-
+    if (reason === null) return;
     try {
       setLoading(true);
       const res = await fetch(
         `http://localhost:5000/api/documents/reject/${id}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reason: reason || "" }),
         }
       );
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.message || "Failed to reject documents");
       }
-
       alert(data.message || "Documents rejected successfully");
       await fetchDocuments();
     } catch (error) {
@@ -158,10 +135,8 @@ export default function Documents() {
     }
   };
 
-  // Filter users based on active tab
   const getFilteredUsers = () => {
     let filtered = users;
-
     if (activeTab === "aadhaar") {
       filtered = filtered.filter((user) => user.aadhaar);
     } else if (activeTab === "marksheet") {
@@ -183,13 +158,11 @@ export default function Documents() {
     } else if (activeTab === "pending") {
       filtered = filtered.filter((user) => user.status === "pending");
     }
-
     if (searchQuery.trim()) {
       filtered = filtered.filter((user) =>
         user.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-
     return filtered;
   };
 
@@ -247,23 +220,19 @@ export default function Documents() {
     },
   ];
 
-  // Get status badge
   const getStatusBadge = (status) => {
     const styles = {
       pending: "bg-amber-100 text-amber-700 border-amber-200",
       accepted: "bg-emerald-100 text-emerald-700 border-emerald-200",
       rejected: "bg-red-100 text-red-700 border-red-200",
     };
-
     const icons = {
       pending: Clock,
       accepted: CheckCircle,
       rejected: X,
     };
-
     const Icon = icons[status] || Clock;
     const style = styles[status] || styles.pending;
-
     return (
       <div
         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${style}`}
@@ -277,14 +246,12 @@ export default function Documents() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2 sm:p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="text-center mb-6 sm:mb-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[#0f4c5c] to-[#1e88a8] bg-clip-text text-transparent mb-3">
             Document Manager
           </h1>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-md border border-gray-100">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -364,57 +331,80 @@ export default function Documents() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-4 sm:mb-6">
-          <div className="relative max-w-2xl mx-auto">
-            <Search
-              className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base rounded-xl border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Tabs */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 px-1">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-200 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "bg-gradient-to-r from-[#0f4c5c] to-[#1e88a8] text-white shadow-lg shadow-blue-500/30 scale-105"
-                      : "bg-white text-gray-600 hover:bg-gray-50 shadow-md border border-gray-100"
-                  }`}
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="relative flex-1">
+              <Search
+                className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Search by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 sm:pl-12 pr-4 py-3.5 sm:py-4 text-sm sm:text-base rounded-xl border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0f4c5c] focus:border-transparent shadow-lg bg-white transition-all duration-200"
+              />
+            </div>
+
+            <div className="relative sm:w-64">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="w-full appearance-none pl-4 pr-10 py-3.5 sm:py-4 text-sm sm:text-base rounded-xl border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0f4c5c] focus:border-transparent shadow-lg bg-white font-medium text-gray-700 cursor-pointer transition-all duration-200 hover:border-[#0f4c5c]"
+              >
+                {tabs.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.label} ({tab.count})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <svg
+                  className="w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <Icon size={16} />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden">{tab.label.slice(0, 3)}</span>
-                  <span
-                    className={`px-1.5 sm:px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      activeTab === tab.id
-                        ? "bg-white/20 text-white"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
+
+          {activeTab !== "all" && (
+            <div className="max-w-4xl mx-auto mt-4">
+              <div className="flex items-center justify-between bg-gradient-to-r from-[#0f4c5c] to-[#1e88a8] text-white px-4 py-3 rounded-lg shadow-md">
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const currentTab = tabs.find((t) => t.id === activeTab);
+                    const Icon = currentTab?.icon || FolderOpen;
+                    return (
+                      <>
+                        <Icon size={18} />
+                        <span className="font-semibold text-sm sm:text-base">
+                          Showing: {currentTab?.label} ({currentTab?.count})
+                        </span>
+                      </>
+                    );
+                  })()}
+                </div>
+                <button
+                  onClick={() => setActiveTab("all")}
+                  className="text-xs sm:text-sm bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-all duration-200 font-medium"
+                >
+                  Clear Filter
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Documents Grid */}
         {filteredUsers.length === 0 ? (
           <div className="text-center py-12 sm:py-20 bg-white rounded-xl sm:rounded-2xl shadow-md">
             <div className="bg-gray-100 w-16 h-16 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
@@ -444,7 +434,6 @@ export default function Documents() {
                   key={user._id}
                   className="bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:-translate-y-1"
                 >
-                  {/* Header */}
                   <div className="p-4 sm:p-5 bg-gradient-to-r from-[#0f4c5c] to-[#1e88a8]">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -470,10 +459,8 @@ export default function Documents() {
                       </button>
                     </div>
 
-                    {/* Status Badge */}
                     <div className="mb-3">{getStatusBadge(status)}</div>
 
-                    {/* Progress Bar */}
                     <div className="bg-white/20 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-white h-full rounded-full transition-all duration-500"
@@ -482,9 +469,7 @@ export default function Documents() {
                     </div>
                   </div>
 
-                  {/* Document List */}
                   <div className="p-4 sm:p-5 space-y-2 sm:space-y-3">
-                    {/* Aadhaar */}
                     {user.aadhaar ? (
                       <div className="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-emerald-200">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -540,7 +525,6 @@ export default function Documents() {
                       </div>
                     )}
 
-                    {/* Marksheet */}
                     {user.marksheet ? (
                       <div className="flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-amber-200">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -595,7 +579,6 @@ export default function Documents() {
                       </div>
                     )}
 
-                    {/* Photo */}
                     {user.photo ? (
                       <div className="flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-purple-200">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -648,7 +631,6 @@ export default function Documents() {
                       </div>
                     )}
 
-                    {/* Rejection Reason */}
                     {status === "rejected" && user.rejectionReason && (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                         <p className="text-xs font-semibold text-red-700 mb-1">
@@ -660,7 +642,6 @@ export default function Documents() {
                       </div>
                     )}
 
-                    {/* Accept/Reject Buttons */}
                     {status === "pending" && (
                       <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-3 border-t border-gray-200">
                         <button
