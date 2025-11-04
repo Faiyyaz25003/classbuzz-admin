@@ -1,616 +1,594 @@
 
 
-"use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Award,
+  GraduationCap,
+  Trophy,
+  Medal,
+  Star,
+  FileText,
+  Upload,
+  X,
   Download,
-  Trash2,
-  Copy,
-  Eye,
-  Plus,
-  Sparkles,
 } from "lucide-react";
 
-export default function Certificate() {
-  const [form, setForm] = useState({
+const Certificate = () => {
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [formData, setFormData] = useState({
+    title: "",
     studentName: "",
-    className: "",
+    class: "",
     rollNo: "",
-    title: "Certificate of Achievement",
-    issuedBy: "School Admin",
-    date: new Date().toISOString().slice(0, 10),
+    issuedBy: "",
+    date: "",
     remarks: "",
-    theme: "classic",
+    signature: "",
+    medalColor: "gold",
   });
+  const [signaturePreview, setSignaturePreview] = useState(null);
 
-  const [certificates, setCertificates] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const previewRef = useRef(null);
+  const templates = [
+    {
+      id: "elegant-gold",
+      name: "Elegant Gold",
+      icon: Award,
+      color: "from-amber-600 to-yellow-700",
+      borderColor: "border-amber-600",
+      bgGradient: "from-amber-50 to-yellow-50",
+      defaultTitle: "Certificate of Achievement",
+    },
+    {
+      id: "academic-excellence",
+      name: "Academic Excellence",
+      icon: GraduationCap,
+      color: "from-blue-600 to-indigo-700",
+      borderColor: "border-blue-600",
+      bgGradient: "from-blue-50 to-indigo-50",
+      defaultTitle: "Certificate of Academic Excellence",
+    },
+    {
+      id: "winner-trophy",
+      name: "Winner Trophy",
+      icon: Trophy,
+      color: "from-green-600 to-emerald-700",
+      borderColor: "border-green-600",
+      bgGradient: "from-green-50 to-emerald-50",
+      defaultTitle: "Certificate of Winner",
+    },
+    {
+      id: "merit-award",
+      name: "Merit Award",
+      icon: Medal,
+      color: "from-purple-600 to-pink-700",
+      borderColor: "border-purple-600",
+      bgGradient: "from-purple-50 to-pink-50",
+      defaultTitle: "Certificate of Merit",
+    },
+    {
+      id: "participation",
+      name: "Participation",
+      icon: Star,
+      color: "from-orange-600 to-red-700",
+      borderColor: "border-orange-600",
+      bgGradient: "from-orange-50 to-red-50",
+      defaultTitle: "Certificate of Participation",
+    },
+    {
+      id: "completion",
+      name: "Course Completion",
+      icon: FileText,
+      color: "from-teal-600 to-cyan-700",
+      borderColor: "border-teal-600",
+      bgGradient: "from-teal-50 to-cyan-50",
+      defaultTitle: "Certificate of Completion",
+    },
+  ];
 
-  const themes = {
-    classic: {
-      border: "border-slate-900",
-      title: "text-sky-700",
-      bg: "bg-gradient-to-br from-blue-50 to-indigo-50",
+  const medalColors = {
+    gold: {
+      gradient: "from-amber-400 to-yellow-600",
+      border: "border-amber-500",
+      text: "text-amber-600",
+      bg: "bg-amber-50",
     },
-    elegant: {
-      border: "border-amber-800",
-      title: "text-amber-900",
-      bg: "bg-gradient-to-br from-amber-50 to-orange-50",
+    silver: {
+      gradient: "from-slate-300 to-slate-500",
+      border: "border-slate-400",
+      text: "text-slate-600",
+      bg: "bg-slate-50",
     },
-    modern: {
-      border: "border-purple-600",
-      title: "text-purple-700",
-      bg: "bg-gradient-to-br from-purple-50 to-pink-50",
-    },
-    professional: {
-      border: "border-emerald-700",
-      title: "text-emerald-800",
-      bg: "bg-gradient-to-br from-emerald-50 to-teal-50",
+    bronze: {
+      gradient: "from-orange-400 to-amber-700",
+      border: "border-orange-600",
+      text: "text-orange-700",
+      bg: "bg-orange-50",
     },
   };
 
-  useEffect(() => {
-    try {
-      const data = JSON.parse(
-        localStorage.getItem("school_certificates_v1") || "[]"
-      );
-      setCertificates(data);
-    } catch (e) {
-      console.warn("Could not load certificates", e);
+  const handleCardClick = (template) => {
+    setSelectedTemplate(template);
+    setFormData({
+      ...formData,
+      title: template.defaultTitle,
+    });
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignaturePreview(reader.result);
+        setFormData({
+          ...formData,
+          signature: reader.result,
+        });
+      };
+      reader.readAsDataURL(file);
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "school_certificates_v1",
-        JSON.stringify(certificates)
-      );
-    } catch (e) {
-      console.warn("Could not save certificates", e);
+  const removeSignature = () => {
+    setSignaturePreview(null);
+    setFormData({
+      ...formData,
+      signature: "",
+    });
+  };
+
+  const handleReset = () => {
+    setFormData({
+      title: selectedTemplate?.defaultTitle || "",
+      studentName: "",
+      class: "",
+      rollNo: "",
+      issuedBy: "",
+      date: "",
+      remarks: "",
+      signature: "",
+      medalColor: "gold",
+    });
+    setSignaturePreview(null);
+  };
+
+  const handleBack = () => {
+    setSelectedTemplate(null);
+    setFormData({
+      title: "",
+      studentName: "",
+      class: "",
+      rollNo: "",
+      issuedBy: "",
+      date: "",
+      remarks: "",
+      signature: "",
+      medalColor: "gold",
+    });
+    setSignaturePreview(null);
+  };
+
+  const handleDownload = () => {
+    const certificateElement = document.getElementById("certificate-content");
+
+    // Using html2canvas approach
+    if (window.html2canvas) {
+      window
+        .html2canvas(certificateElement, {
+          scale: 3,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+        })
+        .then((canvas) => {
+          const imgData = canvas.toDataURL("image/png");
+          const pdf = new window.jspdf.jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4",
+          });
+
+          const pdfWidth = 297;
+          const pdfHeight = 210;
+          const imgWidth = pdfWidth;
+          const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+          const yOffset = (pdfHeight - imgHeight) / 2;
+
+          pdf.addImage(
+            imgData,
+            "PNG",
+            0,
+            yOffset > 0 ? yOffset : 0,
+            imgWidth,
+            imgHeight
+          );
+          pdf.save(`Certificate_${formData.studentName || "Student"}.pdf`);
+        });
+    } else {
+      alert("Please use a modern browser to download the certificate.");
     }
-  }, [certificates]);
+  };
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: value }));
-  }
-
-  function handleCreate() {
-    if (!form.studentName.trim()) {
-      alert("Please enter student name");
-      return;
-    }
-    const id = Date.now().toString();
-    const cert = { id, ...form };
-    setCertificates((c) => [cert, ...c]);
-    setForm((s) => ({ ...s, studentName: "", rollNo: "", remarks: "" }));
-  }
-
-  function handleDelete(id) {
-    if (!confirm("Are you sure you want to delete this certificate?")) return;
-    setCertificates((c) => c.filter((x) => x.id !== id));
-  }
-
-  function openPrintable(cert) {
-    const theme = themes[cert.theme] || themes.classic;
-    const borderColor =
-      cert.theme === "classic"
-        ? "#0f172a"
-        : cert.theme === "elegant"
-        ? "#92400e"
-        : cert.theme === "modern"
-        ? "#9333ea"
-        : "#047857";
-
-    const bgGradient =
-      cert.theme === "classic"
-        ? "linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%)"
-        : cert.theme === "elegant"
-        ? "linear-gradient(135deg, #fffbeb 0%, #ffedd5 100%)"
-        : cert.theme === "modern"
-        ? "linear-gradient(135deg, #faf5ff 0%, #fce7f3 100%)"
-        : "linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%)";
-
-    const html = `
-      <html>
-        <head>
-          <title>${cert.title} - ${cert.studentName}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: 'Georgia', 'Times New Roman', serif;
-              padding: 2rem; 
-              display: flex; 
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              background: #f5f5f5;
-            }
-            .cert { 
-              width: 800px; 
-              height: 560px; 
-              border: 12px solid ${borderColor};
-              padding: 40px; 
-              position: relative;
-              background: ${bgGradient};
-              box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            }
-            .decorative-corner {
-              position: absolute;
-              width: 60px;
-              height: 60px;
-              border: 3px solid ${borderColor};
-            }
-            .top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-            .top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-            .bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-            .bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-            .cert h1 { 
-              margin: 0; 
-              font-size: 32px; 
-              letter-spacing: 2px;
-              text-align: center;
-              font-weight: 700;
-              color: ${borderColor};
-              text-transform: uppercase;
-              margin-top: 20px;
-            }
-            .center { text-align: center; margin-top: 30px; }
-            .awarded-to { font-size: 16px; color: #666; font-style: italic; }
-            .big { 
-              font-size: 36px; 
-              font-weight: 700; 
-              margin-top: 12px;
-              color: #1a1a1a;
-              text-decoration: underline;
-              text-decoration-color: ${borderColor};
-              text-underline-offset: 8px;
-            }
-            .meta { 
-              margin-top: 40px; 
-              display: flex; 
-              justify-content: space-between;
-              align-items: flex-end;
-            }
-            .small { font-size: 14px; }
-            .date-badge {
-              position: absolute;
-              top: 25px;
-              right: 50px;
-              background: ${borderColor};
-              color: white;
-              padding: 6px 16px;
-              border-radius: 20px;
-              font-size: 12px;
-              font-weight: 600;
-            }
-            .seal {
-              position: absolute;
-              bottom: 30px;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 80px;
-              height: 80px;
-              border-radius: 50%;
-              border: 4px solid ${borderColor};
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: white;
-              font-size: 10px;
-              font-weight: 700;
-              color: ${borderColor};
-              text-align: center;
-            }
-            @media print { 
-              body { padding: 0; background: white; }
-              .cert { box-shadow: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="cert">
-            <div class="decorative-corner top-left"></div>
-            <div class="decorative-corner top-right"></div>
-            <div class="decorative-corner bottom-left"></div>
-            <div class="decorative-corner bottom-right"></div>
-            
-            <div class="date-badge">${escapeHtml(cert.date)}</div>
-            
-            <h1>${escapeHtml(cert.title)}</h1>
-            
-            <div class="center">
-              <div class="awarded-to">This certificate is proudly awarded to</div>
-              <div class="big">${escapeHtml(cert.studentName || "-")}</div>
-              <div style="margin-top: 16px; font-size: 15px;">
-                <strong>Class:</strong> ${escapeHtml(
-                  cert.className || "-"
-                )} &nbsp;&nbsp;•&nbsp;&nbsp; 
-                <strong>Roll No:</strong> ${escapeHtml(cert.rollNo || "-")}
-              </div>
-              <div style="margin-top: 20px; font-size: 15px; line-height: 1.6; color: #444; max-width: 600px; margin-left: auto; margin-right: auto;">
-                ${escapeHtml(
-                  cert.remarks ||
-                    "For outstanding performance and dedication to excellence."
-                )}
-              </div>
-            </div>
-
-            <div class="meta">
-              <div class="small">
-                <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Issued By</div>
-                <strong style="font-size: 16px;">${escapeHtml(
-                  cert.issuedBy
-                )}</strong>
-              </div>
-              <div class="small" style="text-align: right;">
-                <div style="border-bottom: 2px solid #333; width: 200px; margin-bottom: 4px;"></div>
-                <div style="font-size: 12px; color: #666;">Authorized Signature</div>
-              </div>
-            </div>
-
-            <div class="seal">
-              OFFICIAL<br>SEAL
-            </div>
+  if (!selectedTemplate) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-slate-800 mb-3">
+              Certificate Templates
+            </h1>
+            <p className="text-slate-600 text-lg">
+              Choose a template to create your certificate
+            </p>
           </div>
 
-          <script>
-            setTimeout(() => { window.print(); }, 300);
-          </script>
-        </body>
-      </html>
-    `;
-
-    const newWin = window.open(
-      "",
-      "_blank",
-      "noopener,noreferrer,width=900,height=700"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {templates.map((template) => {
+              const Icon = template.icon;
+              return (
+                <div
+                  key={template.id}
+                  onClick={() => handleCardClick(template)}
+                  className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 overflow-hidden"
+                >
+                  <div
+                    className={`h-32 bg-gradient-to-r ${template.color} flex items-center justify-center`}
+                  >
+                    <Icon className="w-16 h-16 text-white" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">
+                      {template.name}
+                    </h3>
+                    <p className="text-slate-600 text-sm mb-4">
+                      {template.defaultTitle}
+                    </p>
+                    <button
+                      className={`w-full py-2 px-4 bg-gradient-to-r ${template.color} text-white rounded-lg font-semibold hover:opacity-90 transition`}
+                    >
+                      Select Template
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     );
-    if (!newWin) return alert("Please allow popups to print certificates.");
-    newWin.document.write(html);
-    newWin.document.close();
   }
 
-  function escapeHtml(str) {
-    if (!str) return "";
-    return String(str)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  const filteredCerts = certificates.filter(
-    (c) =>
-      c.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.className?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const currentTheme = themes[form.theme] || themes.classic;
+  const Icon = selectedTemplate.icon;
+  const currentMedalColor = medalColors[formData.medalColor];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      {/* Load required libraries */}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Award className="w-10 h-10 text-blue-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Certificate Generator
-            </h1>
-            <Sparkles className="w-8 h-8 text-amber-500" />
-          </div>
-          <p className="text-gray-600">
-            Create beautiful certificates in seconds
-          </p>
-        </div>
+        <button
+          onClick={handleBack}
+          className="mb-4 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+        >
+          ← Back to Templates
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-              <div className="flex items-center gap-2 mb-4">
-                <Plus className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-semibold">Create Certificate</h2>
+          {/* Form Section - 1 column */}
+          <div className="bg-white rounded-xl shadow-lg p-6 lg:col-span-1">
+            <div className="flex items-center gap-3 mb-6">
+              <div
+                className={`p-3 bg-gradient-to-r ${selectedTemplate.color} rounded-lg`}
+              >
+                <Icon className="w-6 h-6 text-white" />
               </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Theme
-                  </label>
-                  <select
-                    name="theme"
-                    value={form.theme}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  >
-                    <option value="classic">Classic Blue</option>
-                    <option value="elegant">Elegant Gold</option>
-                    <option value="modern">Modern Purple</option>
-                    <option value="professional">Professional Green</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <input
-                    name="title"
-                    value={form.title}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Student Name *
-                  </label>
-                  <input
-                    name="studentName"
-                    value={form.studentName}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Enter student name"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Class
-                    </label>
-                    <input
-                      name="className"
-                      value={form.className}
-                      onChange={handleChange}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      placeholder="e.g., 10-A"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Roll No
-                    </label>
-                    <input
-                      name="rollNo"
-                      value={form.rollNo}
-                      onChange={handleChange}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      placeholder="e.g., 42"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Issued By
-                  </label>
-                  <input
-                    name="issuedBy"
-                    value={form.issuedBy}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Remarks
-                  </label>
-                  <textarea
-                    name="remarks"
-                    value={form.remarks}
-                    onChange={handleChange}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    rows={3}
-                    placeholder="Achievement description..."
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCreate}
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition transform hover:scale-105 active:scale-95 shadow-md"
-                  >
-                    Create & Save
-                  </button>
-                  <button
-                    onClick={() =>
-                      setForm({
-                        studentName: "",
-                        className: "",
-                        rollNo: "",
-                        title: "Certificate of Achievement",
-                        issuedBy: "School Admin",
-                        date: new Date().toISOString().slice(0, 10),
-                        remarks: "",
-                        theme: "classic",
-                      })
-                    }
-                    className="px-4 py-2.5 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold text-slate-800">
+                {selectedTemplate.name}
+              </h2>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Saved Certificates</h3>
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                  {certificates.length}
-                </span>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
 
-              <input
-                type="text"
-                placeholder="Search by name or class..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              />
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Student Name *
+                </label>
+                <input
+                  type="text"
+                  name="studentName"
+                  value={formData.studentName}
+                  onChange={handleInputChange}
+                  placeholder="Enter student name"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-              <div className="space-y-2 max-h-96 overflow-auto">
-                {filteredCerts.length === 0 && (
-                  <div className="text-center py-8 text-gray-400">
-                    <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No certificates yet</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Class
+                  </label>
+                  <input
+                    type="text"
+                    name="class"
+                    value={formData.class}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 10-A"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Roll No
+                  </label>
+                  <input
+                    type="text"
+                    name="rollNo"
+                    value={formData.rollNo}
+                    onChange={handleInputChange}
+                    placeholder="e.g., 42"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Medal Color *
+                </label>
+                <select
+                  name="medalColor"
+                  value={formData.medalColor}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="gold">Gold</option>
+                  <option value="silver">Silver</option>
+                  <option value="bronze">Bronze</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Issued By
+                </label>
+                <input
+                  type="text"
+                  name="issuedBy"
+                  value={formData.issuedBy}
+                  onChange={handleInputChange}
+                  placeholder="School Admin"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Remarks
+                </label>
+                <textarea
+                  name="remarks"
+                  value={formData.remarks}
+                  onChange={handleInputChange}
+                  placeholder="Achievement description..."
+                  rows="3"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Digital Signature (Optional)
+                </label>
+                {!signaturePreview ? (
+                  <label className="w-full flex flex-col items-center px-4 py-6 bg-slate-50 text-slate-500 rounded-lg border-2 border-dashed border-slate-300 cursor-pointer hover:bg-slate-100 transition">
+                    <Upload className="w-8 h-8 mb-2" />
+                    <span className="text-sm">Upload Signature</span>
+                    <span className="text-xs text-slate-400 mt-1">
+                      PNG, JPG (Max 2MB)
+                    </span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleSignatureUpload}
+                    />
+                  </label>
+                ) : (
+                  <div className="relative bg-slate-50 p-4 rounded-lg border border-slate-300">
+                    <button
+                      onClick={removeSignature}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <img
+                      src={signaturePreview}
+                      alt="Signature"
+                      className="max-h-20 mx-auto"
+                    />
                   </div>
                 )}
-                {filteredCerts.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-300 transition group"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-                      <Award className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">
-                        {c.studentName || "-"}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {c.title} • {c.className || "N/A"}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {c.date}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <button
-                        onClick={() => openPrintable(c)}
-                        className="p-1.5 hover:bg-blue-50 rounded transition"
-                        title="View/Print"
-                      >
-                        <Eye className="w-4 h-4 text-blue-600" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            JSON.stringify(c, null, 2)
-                          );
-                          alert("Certificate data copied!");
-                        }}
-                        className="p-1.5 hover:bg-green-50 rounded transition"
-                        title="Copy JSON"
-                      >
-                        <Copy className="w-4 h-4 text-green-600" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(c.id)}
-                        className="p-1.5 hover:bg-red-50 rounded transition"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-600" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  className={`flex-1 py-2 px-4 text-sm bg-gradient-to-r ${selectedTemplate.color} text-white rounded-lg font-semibold hover:opacity-90 transition`}
+                >
+                  Create & Save
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="px-4 py-2 text-sm bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition"
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Live Preview</h2>
+          {/* Live Preview Section - 2 columns */}
+          <div className="bg-white rounded-xl shadow-lg p-4 lg:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-bold text-slate-800">Live Preview</h3>
               <div className="flex gap-2">
                 <button
-                  onClick={() => openPrintable(form)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:from-emerald-700 hover:to-teal-700 transition shadow-md"
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition flex items-center gap-1"
                 >
-                  <Download className="w-4 h-4" />
                   Print
                 </button>
                 <button
-                  onClick={() => {
-                    const id = Date.now().toString();
-                    setCertificates((c) => [{ id, ...form }, ...c]);
-                    alert("Preview saved!");
-                  }}
-                  className="px-4 py-2 border-2 border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition"
+                  onClick={handleDownload}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition flex items-center gap-1"
                 >
-                  Quick Save
+                  <Download className="w-4 h-4" />
+                  Download PDF
                 </button>
               </div>
             </div>
 
-            <div ref={previewRef} className="w-full flex justify-center p-4">
+            <div
+              className={`bg-gradient-to-br ${selectedTemplate.bgGradient} p-6 rounded-lg border-8 ${selectedTemplate.borderColor} shadow-xl`}
+            >
               <div
-                className={`relative w-[800px] h-[560px] border-8 ${currentTheme.border} p-8 ${currentTheme.bg} shadow-2xl`}
+                id="certificate-content"
+                className="bg-white p-6 border-4 border-slate-200 relative min-h-[420px]"
               >
-                <div className="absolute top-4 left-4 w-12 h-12 border-l-4 border-t-4 border-current opacity-30"></div>
-                <div className="absolute top-4 right-4 w-12 h-12 border-r-4 border-t-4 border-current opacity-30"></div>
-                <div className="absolute bottom-4 left-4 w-12 h-12 border-l-4 border-b-4 border-current opacity-30"></div>
-                <div className="absolute bottom-4 right-4 w-12 h-12 border-r-4 border-b-4 border-current opacity-30"></div>
+                {/* Decorative Corners */}
+                <div
+                  className={`absolute top-3 left-3 w-12 h-12 border-t-4 border-l-4 ${currentMedalColor.border}`}
+                ></div>
+                <div
+                  className={`absolute top-3 right-3 w-12 h-12 border-t-4 border-r-4 ${currentMedalColor.border}`}
+                ></div>
+                <div
+                  className={`absolute bottom-3 left-3 w-12 h-12 border-b-4 border-l-4 ${currentMedalColor.border}`}
+                ></div>
+                <div
+                  className={`absolute bottom-3 right-3 w-12 h-12 border-b-4 border-r-4 ${currentMedalColor.border}`}
+                ></div>
 
-                <div className="absolute top-6 right-12 bg-current text-white px-4 py-1 rounded-full text-xs font-semibold">
-                  {form.date}
-                </div>
-
-                <h1
-                  className={`text-3xl ${currentTheme.title} font-bold text-center tracking-wider uppercase mt-4`}
-                >
-                  {form.title}
-                </h1>
-
-                <div className="text-center mt-8">
-                  <div className="text-sm text-gray-600 italic">
-                    This certificate is proudly awarded to
-                  </div>
-                  <div className="text-4xl font-bold mt-3 underline decoration-4 underline-offset-8">
-                    {form.studentName || "Student Name"}
-                  </div>
-                  <div className="mt-4 text-sm font-medium text-gray-700">
-                    <span className="font-semibold">Class:</span>{" "}
-                    {form.className || "--"}
-                    <span className="mx-3">•</span>
-                    <span className="font-semibold">Roll No:</span>{" "}
-                    {form.rollNo || "--"}
-                  </div>
-
-                  <div className="mt-6 text-center text-gray-700 leading-relaxed px-12">
-                    {form.remarks ||
-                      "For outstanding performance and dedication to excellence."}
-                  </div>
-                </div>
-
-                <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
-                  <div className="text-sm">
-                    <div className="text-xs text-gray-600 mb-1">Issued By</div>
-                    <div className="font-bold text-base">{form.issuedBy}</div>
-                  </div>
-                  <div className="text-sm text-center">
-                    <div className="border-b-2 border-gray-800 w-48 mb-1"></div>
-                    <div className="text-xs text-gray-600">
-                      Authorized Signature
+                <div className="text-center relative z-10">
+                  <div className="flex justify-center mb-3">
+                    <div
+                      className={`p-3 bg-gradient-to-r ${currentMedalColor.gradient} rounded-full`}
+                    >
+                      <Icon className="w-10 h-10 text-white" />
                     </div>
                   </div>
-                </div>
 
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 border-current bg-white flex items-center justify-center">
-                  <div className="text-[8px] font-bold text-center leading-tight">
-                    OFFICIAL
-                    <br />
-                    SEAL
+                  <h1
+                    className={`text-3xl font-bold bg-gradient-to-r ${currentMedalColor.gradient} bg-clip-text text-transparent mb-4 uppercase tracking-wider`}
+                  >
+                    {formData.title || "Certificate Title"}
+                  </h1>
+
+                  <p className="text-xs text-slate-600 italic mb-5">
+                    This certificate is proudly presented to
+                  </p>
+
+                  <div className="mb-6">
+                    <h2
+                      className="text-3xl font-bold text-slate-900 mb-1"
+                      style={{ fontFamily: "serif" }}
+                    >
+                      {formData.studentName || "Student Name"}
+                    </h2>
+                    <div
+                      className={`h-1 w-48 mx-auto bg-gradient-to-r ${currentMedalColor.gradient} mt-2`}
+                    ></div>
+                  </div>
+
+                  {(formData.class || formData.rollNo) && (
+                    <div className="flex justify-center gap-6 text-xs text-slate-700 mb-6">
+                      {formData.class && (
+                        <span className="font-semibold">
+                          Class: {formData.class}
+                        </span>
+                      )}
+                      {formData.rollNo && (
+                        <span className="font-semibold">
+                          Roll No: {formData.rollNo}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="max-w-xl mx-auto mb-8">
+                    <p className="text-slate-700 text-sm leading-relaxed">
+                      {formData.remarks ||
+                        "For outstanding performance and dedication to excellence in academics and extracurricular activities."}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-between items-end mt-10 px-6">
+                    <div className="text-left">
+                      <p className="text-xs text-slate-500 mb-1">Issued By</p>
+                      <p className="font-bold text-slate-900 text-base">
+                        {formData.issuedBy || "School Admin"}
+                      </p>
+                      {formData.date && (
+                        <p className="text-xs text-slate-600 mt-1">
+                          Date:{" "}
+                          {new Date(formData.date).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-xs text-slate-500 mb-1">
+                        Authorized Signature
+                      </p>
+                      {formData.signature ? (
+                        <img
+                          src={formData.signature}
+                          alt="Signature"
+                          className="h-12 w-auto max-w-28 mx-auto"
+                        />
+                      ) : (
+                        <div className="border-t-2 border-slate-900 w-28 mt-6"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -620,4 +598,6 @@ export default function Certificate() {
       </div>
     </div>
   );
-}
+};
+
+export default Certificate;
