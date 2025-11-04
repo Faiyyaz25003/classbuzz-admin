@@ -20,6 +20,7 @@ import Leave from "@/Components/LeaveList/LeaveList";
 import UserList from "@/Components/UserList/UserList";
 import Fees from "@/Components/Fees/Fees";
 import Documents from "@/Components/Documents/Documents";
+import Certificate from "@/Components/Certificate/Certificate";
 
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -49,6 +50,7 @@ export default function Sidebar() {
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "courses", name: "Courses", icon: FileText },
     { id: "documents", name: "Documents", icon: FileText },
+    { id: "certificate", name: "Certificate", icon: FileText },
   ];
 
   const handleLinkClick = (id) => {
@@ -70,6 +72,8 @@ export default function Sidebar() {
         return <Fees />;
       case "documents":
         return <Documents />;
+      case "certificate":
+        return <Certificate />;
       default:
         return <Fees />;
     }
