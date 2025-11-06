@@ -1,7 +1,8 @@
 
-
 import React, { useState } from "react";
 import { Upload, X, Download } from "lucide-react";
+import jsPDF from "jspdf"; // ✅ Direct import
+import html2canvas from "html2canvas"; // ✅ Direct import for canvas conversion
 
 const CertificateEditor = ({ template, onBack }) => {
   const [formData, setFormData] = useState({
@@ -17,9 +18,9 @@ const CertificateEditor = ({ template, onBack }) => {
   });
 
   const [signaturePreview, setSignaturePreview] = useState(null);
-  const [isCreated, setIsCreated] = useState(false); // ✅ Track if certificate is created
+  const [isCreated, setIsCreated] = useState(false);
 
-  // Medal styles
+  // Medal color styles
   const medalColors = {
     gold: {
       gradient: "from-amber-400 to-yellow-600",
@@ -41,6 +42,7 @@ const CertificateEditor = ({ template, onBack }) => {
     },
   };
 
+  // Handle form input
   const handleInputChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -77,58 +79,82 @@ const CertificateEditor = ({ template, onBack }) => {
     setIsCreated(false);
   };
 
-  // ✅ Handle Create
-  const handleCreate = () => {
+  // ✅ Create Certificate
+  // const handleCreate = () => {
+  //   if (!formData.studentName) {
+  //     alert(
+  //       "⚠️ Please enter the student name before creating the certificate!"
+  //     );
+  //     return;
+  //   }
+  //   setIsCreated(true);
+  //   alert("🎉 Certificate created successfully! You can now download it.");
+  // };
+
+
+  const handleCreate = async () => {
     if (!formData.studentName) {
-      alert(
-        "⚠️ Please enter the student name before creating the certificate!"
-      );
+      alert("Please enter student name!");
       return;
     }
-    setIsCreated(true);
-    alert("🎉 Certificate created successfully! You can now download it.");
+
+    const userId = localStorage.getItem("userId"); // or from context/login
+
+    const certificateData = { ...formData, userId };
+
+    const response = await fetch("http://localhost:5000/api/certificates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(certificateData),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setIsCreated(true);
+      alert("🎉 Certificate saved to database!");
+    } else {
+      alert("❌ Failed to save certificate: " + data.message);
+    }
   };
 
-  // ✅ Handle Download as PDF
-  const handleDownload = () => {
+
+  // ✅ Download Certificate as PDF
+  const handleDownload = async () => {
     const element = document.getElementById("certificate-content");
     if (!element) {
       alert("⚠️ Please create the certificate first!");
       return;
     }
 
-    import("html2canvas").then(({ default: html2canvas }) => {
-      import("jspdf").then(({ jsPDF }) => {
-        html2canvas(element, {
-          scale: 3,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        }).then((canvas) => {
-          const imgData = canvas.toDataURL("image/png");
-          const pdf = new jsPDF({
-            orientation: "landscape",
-            unit: "mm",
-            format: "a4",
-          });
-
-          const pdfWidth = 297;
-          const pdfHeight = 210;
-          const imgWidth = pdfWidth;
-          const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-          const yOffset = (pdfHeight - imgHeight) / 2;
-
-          pdf.addImage(
-            imgData,
-            "PNG",
-            0,
-            yOffset > 0 ? yOffset : 0,
-            imgWidth,
-            imgHeight
-          );
-          pdf.save(`Certificate_${formData.studentName || "Student"}.pdf`);
-        });
-      });
+    const canvas = await html2canvas(element, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: "#ffffff",
     });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pdfWidth = 297;
+    const pdfHeight = 210;
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    const yOffset = (pdfHeight - imgHeight) / 2;
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      yOffset > 0 ? yOffset : 0,
+      imgWidth,
+      imgHeight
+    );
+    pdf.save(`Certificate_${formData.studentName || "Student"}.pdf`);
   };
 
   const Icon = template.icon;
@@ -145,7 +171,7 @@ const CertificateEditor = ({ template, onBack }) => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* FORM SECTION */}
+          {/* Form Section */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center gap-3 mb-6">
               <div
@@ -168,7 +194,6 @@ const CertificateEditor = ({ template, onBack }) => {
                 placeholder="Certificate Title"
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg"
               />
-
               <input
                 type="text"
                 name="studentName"
@@ -280,24 +305,22 @@ const CertificateEditor = ({ template, onBack }) => {
             </div>
           </div>
 
-          {/* PREVIEW SECTION */}
+          {/* Live Preview Section */}
           <div className="bg-white rounded-xl shadow-lg p-4 lg:col-span-2">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold text-slate-800">Live Preview</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleDownload}
-                  disabled={!isCreated}
-                  className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition ${
-                    isCreated
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                  }`}
-                >
-                  <Download className="w-4 h-4" />
-                  Download PDF
-                </button>
-              </div>
+              <button
+                onClick={handleDownload}
+                disabled={!isCreated}
+                className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition ${
+                  isCreated
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                }`}
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
             </div>
 
             {isCreated ? (
