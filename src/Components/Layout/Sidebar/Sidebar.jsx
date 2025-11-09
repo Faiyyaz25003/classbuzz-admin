@@ -21,6 +21,7 @@ import UserList from "@/Components/UserList/UserList";
 import Fees from "@/Components/Fees/Fees";
 import Documents from "@/Components/Documents/Documents";
 import Certificate from "@/Components/Certificate/Certificate";
+import Result from "@/Components/Result/Result";
 
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -50,6 +51,7 @@ export default function Sidebar() {
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "courses", name: "Courses", icon: FileText },
     { id: "documents", name: "Documents", icon: FileText },
+    { id: "result", name: "Result", icon: FileText },
     { id: "certificate", name: "Certificate", icon: FileText },
   ];
 
@@ -74,6 +76,8 @@ export default function Sidebar() {
         return <Documents />;
       case "certificate":
         return <Certificate />;
+      case "result":
+        return <Result />;
       default:
         return <Fees />;
     }
