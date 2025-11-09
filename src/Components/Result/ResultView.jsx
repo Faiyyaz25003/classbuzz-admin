@@ -49,9 +49,13 @@ export default function ResultView({ student, onClose }) {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-100 to-blue-50 border-b-4 border-red-800 p-6">
             <div className="flex items-start justify-between">
-              <div className="w-16 h-16 bg-gray-800 flex items-center justify-center rounded">
-                <div className="text-white text-xs text-center font-bold">
-                  LOGO
+              <div>
+                <div className="w-16 h-16 flex items-center justify-center rounded">
+                  <img
+                    src="logo.png"
+                    alt="University Logo"
+                    className="object-contain w-[450px] h-[250px]"
+                  />
                 </div>
               </div>
               <div className="flex-1 text-center">
