@@ -1,7 +1,9 @@
 
 "use client";
 import React, { useState } from "react";
-import { UserCircle, Plus, Trash2, Save, Search } from "lucide-react";
+import { UserCircle, Plus, Trash2, Save, Search, Eye } from "lucide-react";
+import ResultView from "./ResultView";
+import ResultPDF from "./ResultPDF";
 
 export default function Result() {
   // ✅ Class list
@@ -53,6 +55,7 @@ export default function Result() {
   };
 
   const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [formData, setFormData] = useState({
     rollNo: "",
     name: "",
@@ -149,6 +152,14 @@ export default function Result() {
 
   const deleteStudent = (id) => {
     setStudents((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const viewResult = (student) => {
+    setSelectedStudent(student);
+  };
+
+  const closeResultView = () => {
+    setSelectedStudent(null);
   };
 
   const filteredStudents = students.filter(
@@ -409,12 +420,23 @@ export default function Result() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <button
-                          onClick={() => deleteStudent(student.id)}
-                          className="text-red-600 hover:text-red-800 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => viewResult(student)}
+                            className="text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50"
+                            title="View Result"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <ResultPDF student={student} />
+                          <button
+                            onClick={() => deleteStudent(student.id)}
+                            className="text-red-600 hover:text-red-800 transition px-2 py-1 rounded hover:bg-red-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -424,6 +446,11 @@ export default function Result() {
           </div>
         )}
       </div>
+
+      {/* Result View Modal */}
+      {selectedStudent && (
+        <ResultView student={selectedStudent} onClose={closeResultView} />
+      )}
     </div>
   );
 }
