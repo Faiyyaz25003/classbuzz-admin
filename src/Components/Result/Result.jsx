@@ -1,5 +1,7 @@
+
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { UserCircle, Plus, Trash2, Save, Search, Eye } from "lucide-react";
 import ResultView from "./ResultView";
 import ResultPDF from "./ResultPDF";
@@ -53,8 +55,11 @@ export default function Result() {
     "Other (Custom)": [],
   };
 
+  // ✅ States
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [formData, setFormData] = useState({
     rollNo: "",
     name: "",
@@ -62,17 +67,30 @@ export default function Result() {
     semester: "",
     subjects: [{ name: "", marks: "", maxMarks: 100 }],
   });
-  const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Handle class and student selection
+  // ✅ Fetch all student results from backend (GET)
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/results");
+        setStudents(response.data);
+      } catch (error) {
+        console.error("Error fetching results:", error);
+        alert("Failed to load student records!");
+      }
+    };
+
+    fetchResults();
+  }, []);
+
+  // ✅ Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // When class changes, reset the student name field
     if (name === "class") {
       setFormData((prev) => ({
         ...prev,
         class: value,
-        name: "", // reset student name
+        name: "",
       }));
     } else {
       setFormData((prev) => ({
@@ -82,6 +100,7 @@ export default function Result() {
     }
   };
 
+  // ✅ Subject field handling
   const handleSubjectChange = (index, field, value) => {
     const newSubjects = [...formData.subjects];
     newSubjects[index][field] = value;
@@ -106,6 +125,61 @@ export default function Result() {
     }));
   };
 
+  // ✅ Save data to backend (POST)
+  const handleSubmit = async () => {
+    if (
+      !formData.rollNo ||
+      !formData.name ||
+      !formData.class ||
+      formData.subjects.some((s) => !s.name || !s.marks)
+    ) {
+      alert("कृपया सभी आवश्यक फील्ड भरें");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/results", {
+        rollNo: formData.rollNo,
+        name: formData.name,
+        className: formData.class,
+        semester: formData.semester,
+        subjects: formData.subjects,
+      });
+
+      setStudents((prev) => [...prev, response.data]);
+      alert("Marks successfully saved!");
+    } catch (error) {
+      console.error(error);
+      alert("Error saving data!");
+    }
+  };
+
+  // ✅ Delete student result (Backend + UI)
+  const deleteStudent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this record?")) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/results/${id}`);
+      setStudents((prev) => prev.filter((s) => s._id !== id));
+      alert("Record deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete record!");
+    }
+  };
+
+  // ✅ View student result
+  const viewResult = (student) => setSelectedStudent(student);
+  const closeResultView = () => setSelectedStudent(null);
+
+  // ✅ Search filter
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // ✅ Calculate percentage
   const calculatePercentage = (subjects) => {
     const totalMarks = subjects.reduce(
       (sum, sub) => sum + Number(sub.marks || 0),
@@ -118,55 +192,6 @@ export default function Result() {
     return totalMax > 0 ? ((totalMarks / totalMax) * 100).toFixed(2) : 0;
   };
 
-  const handleSubmit = () => {
-    if (
-      !formData.rollNo ||
-      !formData.name ||
-      !formData.class ||
-      formData.subjects.some((s) => !s.name || !s.marks)
-    ) {
-      alert("कृपया सभी आवश्यक फील्ड भरें");
-      return;
-    }
-
-    const percentage = calculatePercentage(formData.subjects);
-    const newStudent = {
-      ...formData,
-      percentage,
-      id: Date.now(),
-    };
-
-    setStudents((prev) => [...prev, newStudent]);
-
-    setFormData({
-      rollNo: "",
-      name: "",
-      class: "",
-      semester: "",
-      subjects: [{ name: "", marks: "", maxMarks: 100 }],
-    });
-
-    alert("Marks successfully saved!");
-  };
-
-  const deleteStudent = (id) => {
-    setStudents((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  const viewResult = (student) => {
-    setSelectedStudent(student);
-  };
-
-  const closeResultView = () => {
-    setSelectedStudent(null);
-  };
-
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-6xl mx-auto">
@@ -178,9 +203,10 @@ export default function Result() {
             </h1>
           </div>
 
+          {/* ✅ Entry Form */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* ✅ Class Dropdown */}
+              {/* Class Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Class *
@@ -190,7 +216,6 @@ export default function Result() {
                   value={formData.class}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  required
                 >
                   <option value="">-- Select Class --</option>
                   {classList.map((cls) => (
@@ -201,7 +226,7 @@ export default function Result() {
                 </select>
               </div>
 
-              {/* ✅ Student Dropdown (depends on class) */}
+              {/* Student Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Student Name *
@@ -212,7 +237,6 @@ export default function Result() {
                   onChange={handleInputChange}
                   disabled={!formData.class}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  required
                 >
                   <option value="">
                     {formData.class
@@ -228,6 +252,7 @@ export default function Result() {
                 </select>
               </div>
 
+              {/* Roll No + Semester */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Roll Number *
@@ -239,7 +264,6 @@ export default function Result() {
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter roll number"
-                  required
                 />
               </div>
 
@@ -291,7 +315,6 @@ export default function Result() {
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                       placeholder="e.g., Mathematics"
-                      required
                     />
                   </div>
 
@@ -309,7 +332,6 @@ export default function Result() {
                       placeholder="0"
                       min="0"
                       max={subject.maxMarks}
-                      required
                     />
                   </div>
 
@@ -353,7 +375,7 @@ export default function Result() {
           </div>
         </div>
 
-        {/* ✅ Saved Records Table */}
+        {/* ✅ Display Saved Records */}
         {students.length > 0 && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex justify-between items-center mb-6">
@@ -395,7 +417,7 @@ export default function Result() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredStudents.map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
+                    <tr key={student._id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {student.rollNo}
                       </td>
@@ -403,7 +425,7 @@ export default function Result() {
                         {student.name}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
-                        {student.class}
+                        {student.className}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span
@@ -415,7 +437,7 @@ export default function Result() {
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {student.percentage}%
+                          {student.percentage.toFixed(2)}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -429,7 +451,7 @@ export default function Result() {
                           </button>
                           <ResultPDF student={student} />
                           <button
-                            onClick={() => deleteStudent(student.id)}
+                            onClick={() => deleteStudent(student._id)}
                             className="text-red-600 hover:text-red-800 transition px-2 py-1 rounded hover:bg-red-50"
                             title="Delete"
                           >
@@ -446,11 +468,10 @@ export default function Result() {
         )}
       </div>
 
-      {/* Result View Modal */}
+      {/* ✅ Result Modal */}
       {selectedStudent && (
         <ResultView student={selectedStudent} onClose={closeResultView} />
       )}
     </div>
   );
 }
-
