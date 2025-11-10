@@ -1,5 +1,4 @@
 
-
 "use client";
 import React, { useState, useEffect } from "react";
 import Header from "./Header";
@@ -11,6 +10,7 @@ import TaskDistribution from "./TaskDistribution";
 import RecentActivities from "./RecentActivities";
 import UpcomingEvents from "./UpcomingEvents";
 import { Calendar, Users, BookOpen, TrendingUp } from "lucide-react";
+import PerformanceDashboard from "./PerformanceDashboard";
 
 const Dashboard = () => {
   const [totalStudents, setTotalStudents] = useState("0"); // default value
@@ -26,6 +26,140 @@ const Dashboard = () => {
       type: "Meeting Reminder",
       message: "Team sync at 3 PM today",
       time: "1 hour ago",
+    },
+  ]);
+
+  // Dummy students data for Performance Dashboard
+  const [studentsData] = useState([
+    {
+      id: 1,
+      rollNo: "CS001",
+      name: "Aman Kumar",
+      class: "Computer Science",
+      semester: "Semester 5",
+      percentage: 92.5,
+      subjects: [
+        { name: "Data Structures", marks: 95, maxMarks: 100 },
+        { name: "Algorithms", marks: 90, maxMarks: 100 },
+        { name: "Database Systems", marks: 92, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 2,
+      rollNo: "IT002",
+      name: "Riya Sharma",
+      class: "Information Technology",
+      semester: "Semester 5",
+      percentage: 88.7,
+      subjects: [
+        { name: "Web Development", marks: 90, maxMarks: 100 },
+        { name: "Cloud Computing", marks: 87, maxMarks: 100 },
+        { name: "Software Engineering", marks: 89, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 3,
+      rollNo: "CS003",
+      name: "Karan Singh",
+      class: "Computer Science",
+      semester: "Semester 5",
+      percentage: 91.3,
+      subjects: [
+        { name: "Machine Learning", marks: 93, maxMarks: 100 },
+        { name: "AI Fundamentals", marks: 90, maxMarks: 100 },
+        { name: "Data Mining", marks: 91, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 4,
+      rollNo: "EC004",
+      name: "Priya Patel",
+      class: "Electronics & Communication",
+      semester: "Semester 4",
+      percentage: 85.4,
+      subjects: [
+        { name: "Digital Electronics", marks: 88, maxMarks: 100 },
+        { name: "Signal Processing", marks: 83, maxMarks: 100 },
+        { name: "Communication Systems", marks: 85, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 5,
+      rollNo: "ME005",
+      name: "Rahul Verma",
+      class: "Mechanical Engineering",
+      semester: "Semester 3",
+      percentage: 78.6,
+      subjects: [
+        { name: "Thermodynamics", marks: 80, maxMarks: 100 },
+        { name: "Fluid Mechanics", marks: 77, maxMarks: 100 },
+        { name: "Manufacturing Process", marks: 79, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 6,
+      rollNo: "IT006",
+      name: "Neha Gupta",
+      class: "Information Technology",
+      semester: "Semester 5",
+      percentage: 87.2,
+      subjects: [
+        { name: "Mobile App Development", marks: 89, maxMarks: 100 },
+        { name: "Cybersecurity", marks: 85, maxMarks: 100 },
+        { name: "IoT", marks: 88, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 7,
+      rollNo: "CS007",
+      name: "Vikram Joshi",
+      class: "Computer Science",
+      semester: "Semester 6",
+      percentage: 89.8,
+      subjects: [
+        { name: "Blockchain", marks: 92, maxMarks: 100 },
+        { name: "Computer Networks", marks: 88, maxMarks: 100 },
+        { name: "Operating Systems", marks: 89, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 8,
+      rollNo: "AI008",
+      name: "Simran Kaur",
+      class: "Artificial Intelligence & Data Science",
+      semester: "Semester 4",
+      percentage: 90.5,
+      subjects: [
+        { name: "Deep Learning", marks: 93, maxMarks: 100 },
+        { name: "Natural Language Processing", marks: 89, maxMarks: 100 },
+        { name: "Computer Vision", marks: 90, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 9,
+      rollNo: "EC009",
+      name: "Arjun Reddy",
+      class: "Electronics & Communication",
+      semester: "Semester 5",
+      percentage: 82.3,
+      subjects: [
+        { name: "VLSI Design", marks: 84, maxMarks: 100 },
+        { name: "Embedded Systems", marks: 81, maxMarks: 100 },
+        { name: "Microprocessors", marks: 82, maxMarks: 100 },
+      ],
+    },
+    {
+      id: 10,
+      rollNo: "ME010",
+      name: "Kavita Nair",
+      class: "Mechanical Engineering",
+      semester: "Semester 4",
+      percentage: 75.8,
+      subjects: [
+        { name: "Heat Transfer", marks: 78, maxMarks: 100 },
+        { name: "Machine Design", marks: 74, maxMarks: 100 },
+        { name: "Engineering Materials", marks: 75, maxMarks: 100 },
+      ],
     },
   ]);
 
@@ -159,6 +293,11 @@ const Dashboard = () => {
           <RecentActivities activities={recentActivities} />
         </div>
         <UpcomingEvents events={upcomingEvents} />
+
+        {/* Performance Dashboard with Student Data */}
+        <div className="mt-8">
+          <PerformanceDashboard students={studentsData} />
+        </div>
       </div>
     </div>
   );
