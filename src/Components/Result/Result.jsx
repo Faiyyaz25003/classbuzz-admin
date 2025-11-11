@@ -7,7 +7,7 @@ import ResultView from "./ResultView";
 import ResultPDF from "./ResultPDF";
 
 export default function Result() {
-  // ✅ Class list
+  // ✅ Static class list
   const classList = [
     "Computer Science",
     "Information Technology",
@@ -31,32 +31,9 @@ export default function Result() {
     "Other (Custom)",
   ];
 
-  // ✅ Sample students data per class
-  const studentData = {
-    "Computer Science": ["Aman", "Riya", "Karan", "Neha"],
-    "Information Technology": ["Tina", "Mohit", "Arjun", "Sara"],
-    "Electronics & Communication": ["Rohit", "Priya", "Deepak", "Nisha"],
-    "Mechanical Engineering": ["Rahul", "Vikram", "Sameer"],
-    "Civil Engineering": ["Suresh", "Amit", "Kavita"],
-    "Electrical Engineering": ["Kiran", "Manoj", "Vivek"],
-    "Artificial Intelligence & Data Science": ["Simran", "Ravi", "Meena"],
-    Biotechnology: ["Arnav", "Nikita"],
-    Physics: ["Aditya", "Sneha"],
-    Chemistry: ["Rehan", "Priyanka"],
-    Mathematics: ["Ishaan", "Tara"],
-    Commerce: ["Yash", "Ruchi"],
-    "Business Administration": ["Pooja", "Ajay"],
-    Economics: ["Zoya", "Ankit"],
-    English: ["Tanvi", "Kabir"],
-    Psychology: ["Navya", "Arjun"],
-    Sociology: ["Kriti", "Dev"],
-    "Fine Arts": ["Naina", "Sahil"],
-    "Mass Communication": ["Riya", "Irfan"],
-    "Other (Custom)": [],
-  };
-
   // ✅ States
   const [students, setStudents] = useState([]);
+  const [users, setUsers] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -68,7 +45,21 @@ export default function Result() {
     subjects: [{ name: "", marks: "", maxMarks: 100 }],
   });
 
-  // ✅ Fetch all student results from backend (GET)
+  // ✅ Fetch all users
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/users");
+        setUsers(res.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        alert("Failed to load user list!");
+      }
+    };
+    fetchAllUsers();
+  }, []);
+
+  // ✅ Fetch all student results
   useEffect(() => {
     const fetchResults = async () => {
       try {
@@ -79,53 +70,39 @@ export default function Result() {
         alert("Failed to load student records!");
       }
     };
-
     fetchResults();
   }, []);
 
-  // ✅ Handle input changes
+  // ✅ Handle form input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "class") {
-      setFormData((prev) => ({
-        ...prev,
-        class: value,
-        name: "",
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
-  // ✅ Subject field handling
-  const handleSubjectChange = (index, field, value) => {
-    const newSubjects = [...formData.subjects];
-    newSubjects[index][field] = value;
     setFormData((prev) => ({
       ...prev,
-      subjects: newSubjects,
+      [name]: value,
     }));
   };
 
-  const addSubject = () => {
+  // ✅ Subject handling
+  const handleSubjectChange = (index, field, value) => {
+    const updated = [...formData.subjects];
+    updated[index][field] = value;
+    setFormData((prev) => ({ ...prev, subjects: updated }));
+  };
+
+  const addSubject = () =>
     setFormData((prev) => ({
       ...prev,
       subjects: [...prev.subjects, { name: "", marks: "", maxMarks: 100 }],
     }));
-  };
 
   const removeSubject = (index) => {
-    const newSubjects = formData.subjects.filter((_, i) => i !== index);
     setFormData((prev) => ({
       ...prev,
-      subjects: newSubjects,
+      subjects: prev.subjects.filter((_, i) => i !== index),
     }));
   };
 
-  // ✅ Save data to backend (POST)
+  // ✅ Save data
   const handleSubmit = async () => {
     if (
       !formData.rollNo ||
@@ -154,7 +131,7 @@ export default function Result() {
     }
   };
 
-  // ✅ Delete student result (Backend + UI)
+  // ✅ Delete record
   const deleteStudent = async (id) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
 
@@ -168,7 +145,7 @@ export default function Result() {
     }
   };
 
-  // ✅ View student result
+  // ✅ View result modal
   const viewResult = (student) => setSelectedStudent(student);
   const closeResultView = () => setSelectedStudent(null);
 
@@ -179,22 +156,10 @@ export default function Result() {
       student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ✅ Calculate percentage
-  const calculatePercentage = (subjects) => {
-    const totalMarks = subjects.reduce(
-      (sum, sub) => sum + Number(sub.marks || 0),
-      0
-    );
-    const totalMax = subjects.reduce(
-      (sum, sub) => sum + Number(sub.maxMarks || 0),
-      0
-    );
-    return totalMax > 0 ? ((totalMarks / totalMax) * 100).toFixed(2) : 0;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <UserCircle className="w-10 h-10 text-indigo-600" />
@@ -226,7 +191,7 @@ export default function Result() {
                 </select>
               </div>
 
-              {/* Student Dropdown */}
+              {/* ✅ Student Name Dropdown (ALL USERS) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Student Name *
@@ -235,24 +200,18 @@ export default function Result() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  disabled={!formData.class}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="">
-                    {formData.class
-                      ? "-- Select Student --"
-                      : "Select a class first"}
-                  </option>
-                  {formData.class &&
-                    (studentData[formData.class] || []).map((student) => (
-                      <option key={student} value={student}>
-                        {student}
-                      </option>
-                    ))}
+                  <option value="">-- Select Student --</option>
+                  {users.map((user) => (
+                    <option key={user._id} value={user.name}>
+                      {user.name} ({user.className})
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {/* Roll No + Semester */}
+              {/* Roll No */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Roll Number *
@@ -267,6 +226,7 @@ export default function Result() {
                 />
               </div>
 
+              {/* Semester */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Semester
@@ -282,7 +242,7 @@ export default function Result() {
               </div>
             </div>
 
-            {/* ✅ Subjects Section */}
+            {/* Subjects Section */}
             <div className="border-t pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">
@@ -375,7 +335,7 @@ export default function Result() {
           </div>
         </div>
 
-        {/* ✅ Display Saved Records */}
+        {/* ✅ Saved Records */}
         {students.length > 0 && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex justify-between items-center mb-6">
@@ -468,7 +428,7 @@ export default function Result() {
         )}
       </div>
 
-      {/* ✅ Result Modal */}
+      {/* ✅ Result View Modal */}
       {selectedStudent && (
         <ResultView student={selectedStudent} onClose={closeResultView} />
       )}
