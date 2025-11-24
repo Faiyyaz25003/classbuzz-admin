@@ -1,4 +1,3 @@
-
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -90,7 +89,7 @@ export default function Fees() {
     amount,
     installment,
     paymentMethod,
-    paymentName,
+    paymentName
   ) => {
     try {
       await axios.post("http://localhost:5000/api/fees", {
@@ -512,7 +511,7 @@ export default function Fees() {
         )}
 
         <AnimatePresence>
-          {openFormId && (
+          {openFormId && WebSocket(
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -551,6 +550,119 @@ export default function Fees() {
                   }}
                   className="space-y-4"
                 >
+                  {/* Student Name - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Student Name
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users.find((u) => u._id === openFormId)?.name || ""
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Email - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users.find((u) => u._id === openFormId)?.email || ""
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Phone - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Phone
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users.find((u) => u._id === openFormId)?.phone || ""
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Department - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Department
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users
+                          .find((u) => u._id === openFormId)
+                          ?.departments?.join(", ") || ""
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Position - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Position
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users
+                          .find((u) => u._id === openFormId)
+                          ?.positions?.join(", ") || ""
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Gender - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Gender
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users.find((u) => u._id === openFormId)?.gender || "N/A"
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* Join Date - Read Only */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Join Date
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        users.find((u) => u._id === openFormId)?.joinDate
+                          ? new Date(
+                              users.find((u) => u._id === openFormId)?.joinDate
+                            ).toLocaleDateString()
+                          : "—"
+                      }
+                      disabled
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Amount *
