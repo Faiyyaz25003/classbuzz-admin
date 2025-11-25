@@ -22,7 +22,7 @@ import Fees from "@/Components/Fees/Fees";
 import Documents from "@/Components/Documents/Documents";
 import Certificate from "@/Components/Certificate/Certificate";
 import Result from "@/Components/Result/Result";
-
+import Course from "@/Components/Course/Course";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -49,7 +49,7 @@ export default function Sidebar() {
     { id: "event", name: "Event", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
-    { id: "courses", name: "Courses", icon: FileText },
+    { id: "course", name: "Courses", icon: FileText },
     { id: "documents", name: "Documents", icon: FileText },
     { id: "result", name: "Result", icon: FileText },
     { id: "certificate", name: "Certificate", icon: FileText },
@@ -72,6 +72,8 @@ export default function Sidebar() {
         return <UserList />;
       case "fees":
         return <Fees />;
+      case "course":
+        return <Course />;
       case "documents":
         return <Documents />;
       case "certificate":
