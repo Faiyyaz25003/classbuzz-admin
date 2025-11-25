@@ -1,4 +1,3 @@
-
 "use client";
 import { useState } from "react";
 import {
@@ -30,21 +29,21 @@ export default function RegisterForm() {
     "Information Technology",
     "Electronics & Communication",
     "Mechanical Engineering",
-    "Civil Engineering",
-    "Electrical Engineering",
-    "Artificial Intelligence & Data Science",
-    "Biotechnology",
-    "Physics",
-    "Chemistry",
-    "Mathematics",
-    "Commerce",
-    "Business Administration",
-    "Economics",
-    "English",
-    "Psychology",
-    "Sociology",
-    "Fine Arts",
-    "Mass Communication",
+    // "Civil Engineering",
+    // "Electrical Engineering",
+    // "Artificial Intelligence & Data Science",
+    // "Biotechnology",
+    // "Physics",
+    // "Chemistry",
+    // "Mathematics",
+    // "Commerce",
+    // "Business Administration",
+    // "Economics",
+    // "English",
+    // "Psychology",
+    // "Sociology",
+    // "Fine Arts",
+    // "Mass Communication",
     "Other (Custom)",
   ];
 
