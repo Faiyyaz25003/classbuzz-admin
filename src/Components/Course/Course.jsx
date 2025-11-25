@@ -332,7 +332,7 @@ export default function Course() {
                   className="border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div
-                    className="bg-gradient-to-r from-teal-500 to-cyan-600 p-5 flex justify-between items-center cursor-pointer hover:from-teal-600 hover:to-cyan-700 transition-all"
+                    className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-5 flex justify-between items-center cursor-pointer hover:from-teal-600 hover:to-cyan-700 transition-all"
                     onClick={() => toggleCourse(course._id)}
                   >
                     <div className="flex items-center gap-3">
@@ -351,7 +351,7 @@ export default function Course() {
                         e.stopPropagation();
                         deleteCourse(course._id, course.name);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 bg-aqua border-2 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete
