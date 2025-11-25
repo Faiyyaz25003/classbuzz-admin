@@ -194,11 +194,11 @@ export default function Course() {
       <div className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl shadow-lg">
+            <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-3 rounded-xl shadow-lg">
               <Book className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] bg-clip-text text-transparent">
                 Course Management System
               </h1>
               <p className="text-gray-600 mt-2 text-lg">
@@ -284,7 +284,7 @@ export default function Course() {
           <button
             onClick={addSubject}
             disabled={loading}
-            className="mt-6 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="mt-6 px-8 py-3 bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
             {loading ? "Adding..." : "Add Subject"}
@@ -296,7 +296,7 @@ export default function Course() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="bg-purple-100 p-2 rounded-lg">
-                <Book className="w-6 h-6 text-purple-600" />
+                <Book className="w-6 h-6 text-[#1e7a8c]" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800">All Courses</h2>
             </div>
