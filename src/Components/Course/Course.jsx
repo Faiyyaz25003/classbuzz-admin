@@ -331,6 +331,9 @@ export default function Course() {
                   key={course._id}
                   className="border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
                 >
+
+
+                  
                   <div
                     className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-5 flex justify-between items-center cursor-pointer hover:from-teal-600 hover:to-cyan-700 transition-all"
                     onClick={() => toggleCourse(course._id)}

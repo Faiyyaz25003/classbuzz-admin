@@ -23,6 +23,7 @@ import Documents from "@/Components/Documents/Documents";
 import Certificate from "@/Components/Certificate/Certificate";
 import Result from "@/Components/Result/Result";
 import Course from "@/Components/Course/Course";
+import Schedule from "@/Components/Schedule/Schedule";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -78,6 +79,8 @@ export default function Sidebar() {
         return <Documents />;
       case "certificate":
         return <Certificate />;
+      case "schedule":
+        return <Schedule />;
       case "result":
         return <Result />;
       default:
