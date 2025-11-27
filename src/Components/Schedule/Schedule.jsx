@@ -1,8 +1,6 @@
-
 "use client";
 import React, { useEffect, useState } from "react";
-import { Calendar, Clock, BookOpen, Sparkles } from "lucide-react";
-import axios from "axios";
+import { Calendar, Clock, BookOpen, Sparkles, Zap } from "lucide-react";
 
 export default function Schedule() {
   const [courses, setCourses] = useState([]);
@@ -13,10 +11,9 @@ export default function Schedule() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [startTime, setStartTime] = useState("10:00");
   const [endTime, setEndTime] = useState("15:00");
-  const [slotDuration, setSlotDuration] = useState("45"); // in minutes
+  const [slotDuration, setSlotDuration] = useState("45");
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
   const subjectColors = [
     "bg-gradient-to-br from-blue-500 to-blue-600",
     "bg-gradient-to-br from-purple-500 to-purple-600",
@@ -28,12 +25,12 @@ export default function Schedule() {
     "bg-gradient-to-br from-emerald-500 to-emerald-600",
   ];
 
-  // Fetch courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/course");
-        setCourses(res.data);
+        const res = await fetch("http://localhost:5000/api/course");
+        const data = await res.json();
+        setCourses(data);
       } catch (error) {
         console.log(error);
       }
@@ -41,13 +38,13 @@ export default function Schedule() {
     fetchCourses();
   }, []);
 
-  // Fetch timetables on page load
   useEffect(() => {
     const fetchTimetables = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/schedule");
+        const res = await fetch("http://localhost:5000/api/schedule");
+        const data = await res.json();
         const formatted = {};
-        res.data.forEach((t) => {
+        data.forEach((t) => {
           formatted[`${t.courseId._id}_${t.semester}`] = {
             timetable: t.timetable,
             subjects: t.subjects,
@@ -61,7 +58,6 @@ export default function Schedule() {
     fetchTimetables();
   }, []);
 
-  // Update subjects when course or semester changes
   useEffect(() => {
     if (selectedCourse && selectedSemester) {
       const course = courses.find((c) => c._id === selectedCourse);
@@ -72,12 +68,10 @@ export default function Schedule() {
     }
   }, [selectedCourse, selectedSemester, courses]);
 
-  // Generate time slots
   const generateSlots = () => {
     const slots = [];
     const [startH, startM] = startTime.split(":").map(Number);
     const [endH, endM] = endTime.split(":").map(Number);
-
     let current = new Date();
     current.setHours(startH, startM, 0, 0);
     const end = new Date();
@@ -89,11 +83,9 @@ export default function Schedule() {
       slots.push(`${hours}:${minutes}`);
       current.setMinutes(current.getMinutes() + Number(slotDuration));
     }
-
     return slots;
   };
 
-  // Generate timetable and save to backend
   const generateTimetable = async () => {
     if (subjects.length === 0) {
       alert("Please select course & semester");
@@ -117,7 +109,6 @@ export default function Schedule() {
         newTimetable.push(row);
       }
 
-      // Save to backend
       try {
         const payload = {
           courseId: selectedCourse,
@@ -128,8 +119,11 @@ export default function Schedule() {
           subjects: subjects.map((s) => ({ name: s.name })),
           timetable: newTimetable,
         };
-        await axios.post("http://localhost:5000/api/schedule", payload);
-
+        await fetch("http://localhost:5000/api/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
         const key = `${selectedCourse}_${selectedSemester}`;
         setTimetables((prev) => ({
           ...prev,
@@ -139,165 +133,224 @@ export default function Schedule() {
         console.log(error);
         alert("Failed to save timetable");
       }
-
       setIsGenerating(false);
     }, 800);
   };
 
   const getSubjectColor = (subjectName, timetableSubjects) => {
-    if (subjectName === "--") return "bg-gray-100 text-gray-400";
+    if (subjectName === "--") return "bg-gray-50 text-gray-400 border-gray-200";
     const index = timetableSubjects.findIndex((s) => s.name === subjectName);
     return (
-      subjectColors[index % subjectColors.length] + " text-white shadow-md"
+      subjectColors[index % subjectColors.length] + " text-white shadow-sm"
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
-          Automatic Timetable Generator
-        </h1>
-
-        {/* Controls */}
-        <div className="bg-white shadow-md rounded-xl p-6 grid md:grid-cols-6 gap-4 items-end">
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700 flex items-center gap-1">
-              <BookOpen className="w-4 h-4 text-indigo-600" />
-              Select Course
-            </label>
-            <select
-              value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-300"
-            >
-              <option value="">Choose course</option>
-              {courses.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-lg mb-4">
+            <Sparkles className="w-6 h-6 text-purple-600" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Smart Timetable Generator
+            </h1>
           </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700 flex items-center gap-1">
-              <Clock className="w-4 h-4 text-purple-600" />
-              Select Semester
-            </label>
-            <select
-              value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-              disabled={!selectedCourse}
-              className="border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-purple-300"
-            >
-              <option value="">Choose semester</option>
-              {selectedCourse &&
-                courses
-                  .find((c) => c._id === selectedCourse)
-                  ?.semesters.map((s) => (
-                    <option key={s.semester} value={s.semester}>
-                      Semester {s.semester}
-                    </option>
-                  ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">Start Time</label>
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">End Time</label>
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">
-              Duration (mins)
-            </label>
-            <input
-              type="number"
-              value={slotDuration}
-              onChange={(e) => setSlotDuration(e.target.value)}
-              className="border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-300"
-            />
-          </div>
-
-          <button
-            onClick={generateTimetable}
-            disabled={isGenerating}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold px-5 py-3 rounded-xl shadow-md hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isGenerating ? "Generating..." : "Generate Timetable"}
-          </button>
+          <p className="text-gray-600 text-lg">
+            Create your perfect schedule in seconds
+          </p>
         </div>
 
-        {/* Timetable Display */}
-        {Object.keys(timetables).length > 0 ? (
-          Object.keys(timetables).map((key) => {
-            const [courseId, semester] = key.split("_");
-            const courseName = courses.find((c) => c._id === courseId)?.name;
-            const { timetable, subjects: timetableSubjects } = timetables[key];
-            const slots = generateSlots();
-            return (
-              <div
-                key={key}
-                className="bg-white rounded-xl shadow-md mt-8 overflow-x-auto"
+        {/* Controls Card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-indigo-600" />
+                Course
+              </label>
+              <select
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all"
               >
-                <h2 className="text-xl font-bold text-gray-800 p-4 border-b">
-                  Timetable for {courseName} - Semester {semester}
-                </h2>
-                <table className="w-full text-center border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-2 font-medium">Day</th>
-                      {slots.map((slot) => (
-                        <th key={slot} className="px-4 py-2 font-medium">
-                          {slot}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {timetable.map((row, idx) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
-                        <td className="px-4 py-2 font-semibold text-gray-700 bg-gray-50">
-                          {row.day}
-                        </td>
-                        {slots.map((slot) => (
-                          <td key={slot} className="px-2 py-2">
-                            <div
-                              className={`px-3 py-1 rounded-lg text-white text-sm font-medium ${getSubjectColor(
-                                row[slot],
-                                timetableSubjects
-                              )}`}
-                            >
-                              {row[slot]}
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
+                <option value="">Choose course</option>
+                {courses.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-purple-600" />
+                Semester
+              </label>
+              <select
+                value={selectedSemester}
+                onChange={(e) => setSelectedSemester(e.target.value)}
+                disabled={!selectedCourse}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all disabled:bg-gray-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Choose semester</option>
+                {selectedCourse &&
+                  courses
+                    .find((c) => c._id === selectedCourse)
+                    ?.semesters.map((s) => (
+                      <option key={s.semester} value={s.semester}>
+                        Semester {s.semester}
+                      </option>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-green-600" />
+                Start Time
+              </label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-orange-600" />
+                End Time
+              </label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Duration (min)
+              </label>
+              <input
+                type="number"
+                value={slotDuration}
+                onChange={(e) => setSlotDuration(e.target.value)}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                onClick={generateTimetable}
+                disabled={isGenerating}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Zap className="w-5 h-5" />
+                {isGenerating ? "Generating..." : "Generate"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Timetables Display */}
+        {Object.keys(timetables).length > 0 ? (
+          <div className="space-y-8">
+            {Object.keys(timetables).map((key) => {
+              const [courseId, semester] = key.split("_");
+              const courseName = courses.find((c) => c._id === courseId)?.name;
+              const { timetable, subjects: timetableSubjects } =
+                timetables[key];
+              const slots = generateSlots();
+
+              return (
+                <div
+                  key={key}
+                  className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
+                >
+                  {/* Timetable Header */}
+                  <div className="mb-6 pb-4 border-b-2 border-gray-100">
+                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                        <Calendar className="w-6 h-6 text-white" />
+                      </div>
+                      {courseName} - Semester {semester}
+                    </h2>
+                  </div>
+
+                  {/* Timetable Grid */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="bg-gradient-to-br from-gray-700 to-gray-800 text-white px-4 py-4 text-left font-bold rounded-tl-xl border-r-2 border-gray-600">
+                            Day
+                          </th>
+                          {slots.map((slot, idx) => (
+                            <th
+                              key={slot}
+                              className={`bg-gradient-to-br from-indigo-600 to-purple-600 text-white px-4 py-4 text-center font-semibold border-r-2 border-indigo-500 ${
+                                idx === slots.length - 1 ? "rounded-tr-xl" : ""
+                              }`}
+                            >
+                              <div className="flex items-center justify-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                {slot}
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {timetable.map((row, rowIdx) => (
+                          <tr
+                            key={rowIdx}
+                            className="border-t-2 border-gray-200"
+                          >
+                            <td className="bg-gradient-to-r from-gray-100 to-gray-50 px-4 py-4 font-bold text-gray-800 border-r-2 border-gray-300">
+                              {row.day}
+                            </td>
+                            {slots.map((slot, colIdx) => (
+                              <td
+                                key={slot}
+                                className="border-r-2 border-gray-200 p-2"
+                              >
+                                <div
+                                  className={`${getSubjectColor(
+                                    row[slot],
+                                    timetableSubjects
+                                  )} px-4 py-3 rounded-lg text-center font-medium text-sm transition-all hover:scale-105 border-2 ${
+                                    row[slot] === "--"
+                                      ? "border-gray-200"
+                                      : "border-white border-opacity-30"
+                                  }`}
+                                >
+                                  {row[slot]}
+                                </div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <div className="text-center text-gray-500 mt-10">
-            No timetable generated yet.
+          <div className="bg-white rounded-3xl shadow-xl p-16 text-center border border-gray-100">
+            <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-10 h-10 text-indigo-600" />
+            </div>
+            <p className="text-gray-500 text-lg font-medium">
+              No timetable generated yet. Configure your schedule and click
+              Generate!
+            </p>
           </div>
         )}
       </div>
