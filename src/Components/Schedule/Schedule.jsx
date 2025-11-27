@@ -1,6 +1,8 @@
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { Calendar, Clock, BookOpen, Sparkles } from "lucide-react";
+import axios from "axios";
 
 export default function Schedule() {
   const [courses, setCourses] = useState([]);
@@ -26,12 +28,12 @@ export default function Schedule() {
     "bg-gradient-to-br from-emerald-500 to-emerald-600",
   ];
 
+  // Fetch courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/course");
-        const data = await res.json();
-        setCourses(data);
+        const res = await axios.get("http://localhost:5000/api/course");
+        setCourses(res.data);
       } catch (error) {
         console.log(error);
       }
@@ -39,6 +41,27 @@ export default function Schedule() {
     fetchCourses();
   }, []);
 
+  // Fetch timetables on page load
+  useEffect(() => {
+    const fetchTimetables = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/schedule");
+        const formatted = {};
+        res.data.forEach((t) => {
+          formatted[`${t.courseId._id}_${t.semester}`] = {
+            timetable: t.timetable,
+            subjects: t.subjects,
+          };
+        });
+        setTimetables(formatted);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchTimetables();
+  }, []);
+
+  // Update subjects when course or semester changes
   useEffect(() => {
     if (selectedCourse && selectedSemester) {
       const course = courses.find((c) => c._id === selectedCourse);
@@ -49,7 +72,7 @@ export default function Schedule() {
     }
   }, [selectedCourse, selectedSemester, courses]);
 
-  // Function to generate time slots dynamically based on duration
+  // Generate time slots
   const generateSlots = () => {
     const slots = [];
     const [startH, startM] = startTime.split(":").map(Number);
@@ -64,23 +87,21 @@ export default function Schedule() {
       const hours = current.getHours().toString().padStart(2, "0");
       const minutes = current.getMinutes().toString().padStart(2, "0");
       slots.push(`${hours}:${minutes}`);
-
-      // Add duration
       current.setMinutes(current.getMinutes() + Number(slotDuration));
     }
 
     return slots;
   };
 
-  const generateTimetable = () => {
+  // Generate timetable and save to backend
+  const generateTimetable = async () => {
     if (subjects.length === 0) {
       alert("Please select course & semester");
       return;
     }
 
     setIsGenerating(true);
-
-    setTimeout(() => {
+    setTimeout(async () => {
       const slots = generateSlots();
       const shuffledSubjects = [...subjects].sort(() => Math.random() - 0.5);
       const newTimetable = [];
@@ -96,11 +117,29 @@ export default function Schedule() {
         newTimetable.push(row);
       }
 
-      const key = `${selectedCourse}_${selectedSemester}`;
-      setTimetables((prev) => ({
-        ...prev,
-        [key]: { timetable: newTimetable, subjects: [...subjects] },
-      }));
+      // Save to backend
+      try {
+        const payload = {
+          courseId: selectedCourse,
+          semester: selectedSemester,
+          startTime,
+          endTime,
+          slotDuration: Number(slotDuration),
+          subjects: subjects.map((s) => ({ name: s.name })),
+          timetable: newTimetable,
+        };
+        await axios.post("http://localhost:5000/api/schedule", payload);
+
+        const key = `${selectedCourse}_${selectedSemester}`;
+        setTimetables((prev) => ({
+          ...prev,
+          [key]: { timetable: newTimetable, subjects: [...subjects] },
+        }));
+      } catch (error) {
+        console.log(error);
+        alert("Failed to save timetable");
+      }
+
       setIsGenerating(false);
     }, 800);
   };
