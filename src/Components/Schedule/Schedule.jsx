@@ -149,16 +149,13 @@ export default function Schedule() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className=" text-left mb-8">
           <div className="inline-flex items-center gap-3 bg-white px-6 py-3 rounded-full shadow-lg mb-4">
             <Sparkles className="w-6 h-6 text-purple-600" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Smart Timetable Generator
+              Schedule
             </h1>
           </div>
-          <p className="text-gray-600 text-lg">
-            Create your perfect schedule in seconds
-          </p>
         </div>
 
         {/* Controls Card */}
