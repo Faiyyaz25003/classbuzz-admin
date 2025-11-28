@@ -1,436 +1,203 @@
 
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { UserCircle, Plus, Trash2, Save, Search, Eye } from "lucide-react";
-import ResultView from "./ResultView";
-import ResultPDF from "./ResultPDF";
 
-export default function Result() {
-  // ✅ Static class list
-  const classList = [
-    "Computer Science",
-    "Information Technology",
-    "Electronics & Communication",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Electrical Engineering",
-    "Artificial Intelligence & Data Science",
-    "Biotechnology",
-    "Physics",
-    "Chemistry",
-    "Mathematics",
-    "Commerce",
-    "Business Administration",
-    "Economics",
-    "English",
-    "Psychology",
-    "Sociology",
-    "Fine Arts",
-    "Mass Communication",
-    "Other (Custom)",
-  ];
-
-  // ✅ States
-  const [students, setStudents] = useState([]);
+export default function MarksEntry() {
+  const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [rollNumber, setRollNumber] = useState("");
+  const [subjects, setSubjects] = useState([]);
+  const [marks, setMarks] = useState({});
 
-  const [formData, setFormData] = useState({
-    rollNo: "",
-    name: "",
-    class: "",
-    semester: "",
-    subjects: [{ name: "", marks: "", maxMarks: 100 }],
-  });
-
-  // ✅ Fetch all users
+  // Fetch courses
   useEffect(() => {
-    const fetchAllUsers = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/users");
-        setUsers(res.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        alert("Failed to load user list!");
-      }
+    const fetchCourses = async () => {
+      const res = await axios.get("http://localhost:5000/api/course");
+      setCourses(res.data);
     };
-    fetchAllUsers();
+    fetchCourses();
   }, []);
 
-  // ✅ Fetch all student results
+  // Fetch users
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/results");
-        setStudents(response.data);
-      } catch (error) {
-        console.error("Error fetching results:", error);
-        alert("Failed to load student records!");
-      }
+    const fetchUsers = async () => {
+      const res = await axios.get("http://localhost:5000/api/users");
+      setUsers(res.data);
     };
-    fetchResults();
+    fetchUsers();
   }, []);
 
-  // ✅ Handle form input
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleCourseSelect = (id) => {
+    setSelectedCourse(id);
+    setSelectedSemester("");
+    setSubjects([]);
+    setMarks({});
   };
 
-  // ✅ Subject handling
-  const handleSubjectChange = (index, field, value) => {
-    const updated = [...formData.subjects];
-    updated[index][field] = value;
-    setFormData((prev) => ({ ...prev, subjects: updated }));
+  const handleSemesterSelect = (sem) => {
+    setSelectedSemester(sem);
+    const course = courses.find((c) => c._id === selectedCourse);
+    const selectedSem = course?.semesters.find(
+      (s) => s.semester.toString() === sem
+    );
+    setSubjects(selectedSem?.subjects || []);
   };
 
-  const addSubject = () =>
-    setFormData((prev) => ({
-      ...prev,
-      subjects: [...prev.subjects, { name: "", marks: "", maxMarks: 100 }],
-    }));
-
-  const removeSubject = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      subjects: prev.subjects.filter((_, i) => i !== index),
-    }));
+  const handleMarksChange = (sub, value) => {
+    setMarks({ ...marks, [sub]: value });
   };
 
-  // ✅ Save data
   const handleSubmit = async () => {
-    if (
-      !formData.rollNo ||
-      !formData.name ||
-      !formData.class ||
-      formData.subjects.some((s) => !s.name || !s.marks)
-    ) {
-      alert("कृपया सभी आवश्यक फील्ड भरें");
+    if (!selectedCourse || !selectedSemester || !selectedUser || !rollNumber) {
+      alert("Please fill all required fields!");
       return;
     }
 
-    try {
-      const response = await axios.post("http://localhost:5000/api/results", {
-        rollNo: formData.rollNo,
-        name: formData.name,
-        className: formData.class,
-        semester: formData.semester,
-        subjects: formData.subjects,
-      });
-
-      setStudents((prev) => [...prev, response.data]);
-      alert("Marks successfully saved!");
-    } catch (error) {
-      console.error(error);
-      alert("Error saving data!");
-    }
-  };
-
-  // ✅ Delete record
-  const deleteStudent = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+    const payload = {
+      courseId: selectedCourse,
+      semester: selectedSemester,
+      userId: selectedUser,
+      rollNumber,
+      marks: subjects.map((s) => ({
+        subject: s.name,
+        obtained: Number(marks[s.name] || 0),
+        maxMarks: 100,
+      })),
+    };
 
     try {
-      await axios.delete(`http://localhost:5000/api/results/${id}`);
-      setStudents((prev) => prev.filter((s) => s._id !== id));
-      alert("Record deleted successfully!");
+      const res = await axios.post("http://localhost:5000/api/marks", payload);
+      if (res.status === 201 || res.status === 200) {
+        alert("Marks Submitted Successfully!");
+        // Reset form
+        setSelectedCourse("");
+        setSelectedSemester("");
+        setSelectedUser("");
+        setRollNumber("");
+        setSubjects([]);
+        setMarks({});
+      }
     } catch (error) {
       console.error(error);
-      alert("Failed to delete record!");
+      alert("Failed to submit marks. Please try again.");
     }
   };
-
-  // ✅ View result modal
-  const viewResult = (student) => setSelectedStudent(student);
-  const closeResultView = () => setSelectedStudent(null);
-
-  // ✅ Search filter
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <UserCircle className="w-10 h-10 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-gray-800">
-              Student Marks Entry System
-            </h1>
-          </div>
+    <div className="p-8 max-w-6xl mx-auto">
+      <h1 className="text-4xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 text-center">
+        Student Marks Entry
+      </h1>
 
-          {/* ✅ Entry Form */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Class Dropdown */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Class *
-                </label>
-                <select
-                  name="class"
-                  value={formData.class}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">-- Select Class --</option>
-                  {classList.map((cls) => (
-                    <option key={cls} value={cls}>
-                      {cls}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* ✅ Student Name Dropdown (ALL USERS) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student Name *
-                </label>
-                <select
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">-- Select Student --</option>
-                  {users.map((user) => (
-                    <option key={user._id} value={user.name}>
-                      {user.name} ({user.className})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Roll No */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Roll Number *
-                </label>
-                <input
-                  type="text"
-                  name="rollNo"
-                  value={formData.rollNo}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter roll number"
-                />
-              </div>
-
-              {/* Semester */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Semester
-                </label>
-                <input
-                  type="text"
-                  name="semester"
-                  value={formData.semester}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., Semester 1"
-                />
-              </div>
-            </div>
-
-            {/* Subjects Section */}
-            <div className="border-t pt-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Subject Marks
-                </h3>
-                <button
-                  type="button"
-                  onClick={addSubject}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Subject
-                </button>
-              </div>
-
-              {formData.subjects.map((subject, index) => (
-                <div
-                  key={index}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-lg"
-                >
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Subject Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={subject.name}
-                      onChange={(e) =>
-                        handleSubjectChange(index, "name", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                      placeholder="e.g., Mathematics"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Marks Obtained *
-                    </label>
-                    <input
-                      type="number"
-                      value={subject.marks}
-                      onChange={(e) =>
-                        handleSubjectChange(index, "marks", e.target.value)
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                      placeholder="0"
-                      min="0"
-                      max={subject.maxMarks}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Max Marks
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={subject.maxMarks}
-                        onChange={(e) =>
-                          handleSubjectChange(index, "maxMarks", e.target.value)
-                        }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                        placeholder="100"
-                        min="1"
-                      />
-                      {formData.subjects.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSubject(index)}
-                          className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-semibold"
-            >
-              <Save className="w-5 h-5" />
-              Save Marks
-            </button>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gradient-to-br from-white to-gray-50 p-6 shadow-2xl rounded-2xl transition-all hover:shadow-3xl">
+        {/* Course */}
+        <div>
+          <label className="font-semibold text-gray-700 mb-1 block">
+            Select Course *
+          </label>
+          <select
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-1 transition"
+            value={selectedCourse}
+            onChange={(e) => handleCourseSelect(e.target.value)}
+          >
+            <option value="">Select Course</option>
+            {courses.map((c) => (
+              <option key={c._id} value={c._id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* ✅ Saved Records */}
-        {students.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Saved Records
-              </h2>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name or roll no..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
+        {/* Semester */}
+        <div>
+          <label className="font-semibold text-gray-700 mb-1 block">
+            Select Semester *
+          </label>
+          <select
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-1 transition"
+            value={selectedSemester}
+            onChange={(e) => handleSemesterSelect(e.target.value)}
+            disabled={!selectedCourse}
+          >
+            <option value="">Select Semester</option>
+            {selectedCourse &&
+              courses
+                .find((c) => c._id === selectedCourse)
+                ?.semesters.map((s) => (
+                  <option key={s.semester} value={s.semester}>
+                    Semester {s.semester}
+                  </option>
+                ))}
+          </select>
+        </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Roll No
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Class
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Percentage
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredStudents.map((student) => (
-                    <tr key={student._id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {student.rollNo}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {student.name}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {student.className}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            student.percentage >= 75
-                              ? "bg-green-100 text-green-800"
-                              : student.percentage >= 60
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {student.percentage.toFixed(2)}%
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => viewResult(student)}
-                            className="text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1 px-2 py-1 rounded hover:bg-indigo-50"
-                            title="View Result"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <ResultPDF student={student} />
-                          <button
-                            onClick={() => deleteStudent(student._id)}
-                            className="text-red-600 hover:text-red-800 transition px-2 py-1 rounded hover:bg-red-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {/* Student */}
+        <div>
+          <label className="font-semibold text-gray-700 mb-1 block">
+            Student Name *
+          </label>
+          <select
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-1 transition"
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
+          >
+            <option value="">Select User</option>
+            {users.map((u) => (
+              <option key={u._id} value={u._id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Roll Number */}
+        <div>
+          <label className="font-semibold text-gray-700 mb-1 block">
+            Roll Number *
+          </label>
+          <input
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mt-1 transition"
+            placeholder="Enter Roll Number"
+            value={rollNumber}
+            onChange={(e) => setRollNumber(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* ✅ Result View Modal */}
-      {selectedStudent && (
-        <ResultView student={selectedStudent} onClose={closeResultView} />
+      {/* Subjects */}
+      {subjects.length > 0 && (
+        <div className="bg-white p-6 shadow-2xl rounded-2xl mt-8 transition-all hover:shadow-3xl">
+          <h2 className="text-2xl font-bold mb-6 text-indigo-600">
+            Enter Marks
+          </h2>
+          {subjects.map((sub) => (
+            <div
+              key={sub.name}
+              className="flex items-center gap-4 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 transition hover:bg-gray-100"
+            >
+              <p className="w-1/2 font-semibold text-gray-700">{sub.name}</p>
+              <input
+                type="number"
+                className="w-1/4 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                placeholder="Marks"
+                defaultValue={0}
+                onChange={(e) => handleMarksChange(sub.name, e.target.value)}
+              />
+              <p className="w-1/4 text-gray-500">/ 100</p>
+            </div>
+          ))}
+          <button
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-full font-bold mt-6 hover:scale-105 transition transform shadow-lg"
+            onClick={handleSubmit}
+          >
+            Submit Marks
+          </button>
+        </div>
       )}
     </div>
   );
