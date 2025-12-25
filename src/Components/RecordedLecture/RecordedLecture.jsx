@@ -205,11 +205,11 @@ export default function RecordedLectures() {
       <div className="bg-white shadow-lg border-b-4 border-indigo-500">
         <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl">
+            <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-3 rounded-xl">
               <Video className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] bg-clip-text text-transparent">
                 EduStream
               </h1>
               <p className="text-sm text-gray-500">Learn Anytime, Anywhere</p>
@@ -217,7 +217,7 @@ export default function RecordedLectures() {
           </div>
           <button
             onClick={() => setShowAdminPanel(!showAdminPanel)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+            className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
           >
             {showAdminPanel ? <X size={20} /> : <Plus size={20} />}
             {showAdminPanel ? "Close" : "Add Lecture"}
@@ -229,7 +229,7 @@ export default function RecordedLectures() {
       {showAdminPanel && (
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6">
+            <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Plus /> Upload New Lecture
               </h2>
@@ -304,7 +304,7 @@ export default function RecordedLectures() {
               <button
                 onClick={addLecture}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -386,7 +386,7 @@ export default function RecordedLectures() {
                 onClick={() => setSelectedClass(cls)}
                 className="group bg-white rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:-translate-y-2 overflow-hidden"
               >
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-8 flex items-center justify-center">
+                <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-8 flex items-center justify-center">
                   <BookOpen
                     className="text-white group-hover:scale-110 transition"
                     size={48}
