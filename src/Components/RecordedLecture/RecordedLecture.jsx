@@ -1,40 +1,10 @@
-import { useState } from "react";
-import {
-  Video,
-  BookOpen,
-  Plus,
-  ArrowLeft,
-  Upload,
-  Play,
-  Calendar,
-  Book,
-} from "lucide-react";
+
+"use client";
+import { useEffect, useState } from "react";
+import { Video, BookOpen, ArrowLeft, Filter } from "lucide-react";
 
 export default function RecordedLectures() {
-  const [lectures, setLectures] = useState({
-    "1st Standard": [
-      {
-        title: "Introduction to Numbers",
-        subject: "Mathematics",
-        date: "2024-01-15",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      },
-      {
-        title: "Basic Addition",
-        subject: "Mathematics",
-        date: "2024-01-20",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      },
-    ],
-    "2nd Standard": [
-      {
-        title: "Multiplication Tables",
-        subject: "Mathematics",
-        date: "2024-01-18",
-        videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      },
-    ],
-  });
+  const [lectures, setLectures] = useState({});
   const [selectedClass, setSelectedClass] = useState(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
 
@@ -45,244 +15,252 @@ export default function RecordedLectures() {
   const [date, setDate] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
 
-  // Save lecture
-  const addLecture = () => {
-    if (!className || !title || !subject || !date || !videoUrl) {
-      alert("All fields required");
+  // 🔍 Filter states
+  const [filterSubject, setFilterSubject] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [searchTitle, setSearchTitle] = useState("");
+
+  // 🔁 Convert ANY YouTube URL to EMBED
+  const getEmbedUrl = (url) => {
+    if (!url) return "";
+    if (url.includes("embed")) return url;
+
+    if (url.includes("watch?v=")) {
+      const videoId = url.split("v=")[1]?.split("&")[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    if (url.includes("youtu.be")) {
+      const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    return url;
+  };
+
+  // 🔄 Fetch lectures
+  const fetchLectures = async () => {
+    const res = await fetch("http://localhost:5000/api/lectures");
+    const data = await res.json();
+
+    const grouped = {};
+    data.forEach((lec) => {
+      if (!grouped[lec.className]) grouped[lec.className] = [];
+      grouped[lec.className].push(lec);
+    });
+
+    setLectures(grouped);
+  };
+
+  useEffect(() => {
+    fetchLectures();
+  }, []);
+
+  // ➕ Add Lecture
+  const addLecture = async () => {
+    if (!className || !title || !videoUrl) {
+      alert("Please fill all required fields");
       return;
     }
 
-    const updated = { ...lectures };
-    if (!updated[className]) {
-      updated[className] = [];
-    }
-    updated[className].push({ title, subject, date, videoUrl });
-    setLectures(updated);
+    await fetch("http://localhost:5000/api/lectures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        className,
+        title,
+        subject,
+        date,
+        videoUrl,
+      }),
+    });
 
+    fetchLectures();
     setTitle("");
     setSubject("");
     setDate("");
     setVideoUrl("");
-    alert("Lecture Added Successfully! ✓");
+    alert("Lecture Added ✅");
   };
+
+  // 🎯 FILTER LOGIC
+  const filteredLectures =
+    lectures[selectedClass]?.filter((vid) => {
+      const matchSubject = filterSubject
+        ? vid.subject?.toLowerCase() === filterSubject.toLowerCase()
+        : true;
+
+      const matchDate = filterDate ? vid.date === filterDate : true;
+
+      const matchTitle = searchTitle
+        ? vid.title?.toLowerCase().includes(searchTitle.toLowerCase())
+        : true;
+
+      return matchSubject && matchDate && matchTitle;
+    }) || [];
+
+  // Get unique subjects for dropdown
+  const subjects =
+    lectures[selectedClass]
+      ?.map((v) => v.subject)
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <div className="bg-white shadow-md border-b-4 border-indigo-500">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-indigo-600 p-3 rounded-xl">
-                <Video className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">EduStream</h1>
-                <p className="text-sm text-gray-500">
-                  Recorded Lecture Library
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAdminPanel(!showAdminPanel)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <Upload className="w-5 h-5" />
-              {showAdminPanel ? "Close Admin" : "Admin Panel"}
-            </button>
-          </div>
-        </div>
+      <div className="bg-white shadow-md border-b-4 border-indigo-500 p-6 flex justify-between">
+        <h1 className="text-3xl font-bold flex gap-2 items-center">
+          <Video /> EduStream
+        </h1>
+        <button
+          onClick={() => setShowAdminPanel(!showAdminPanel)}
+          className="bg-indigo-600 text-white px-5 py-2 rounded-lg"
+        >
+          Admin Panel
+        </button>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* ================= ADMIN PANEL ================= */}
-        {showAdminPanel && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border-2 border-indigo-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-purple-100 p-2 rounded-lg">
-                <Plus className="w-6 h-6 text-purple-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Upload New Lecture
-              </h2>
+      {/* Admin Panel */}
+      {showAdminPanel && (
+        <div className="bg-white p-6 max-w-3xl mx-auto mt-6 rounded-xl shadow">
+          <h2 className="text-xl font-bold mb-4">Upload Lecture</h2>
+
+          <input
+            placeholder="Class Name"
+            className="w-full border p-2 rounded mb-2"
+            onChange={(e) => setClassName(e.target.value)}
+          />
+          <input
+            placeholder="Lecture Title"
+            className="w-full border p-2 rounded mb-2"
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <input
+            placeholder="Subject"
+            className="w-full border p-2 rounded mb-2"
+            onChange={(e) => setSubject(e.target.value)}
+          />
+          <input
+            type="date"
+            className="w-full border p-2 rounded mb-2"
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <input
+            placeholder="YouTube Video URL"
+            className="w-full border p-2 rounded mb-3"
+            onChange={(e) => setVideoUrl(e.target.value)}
+          />
+
+          <button
+            onClick={addLecture}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg"
+          >
+            Add Lecture
+          </button>
+        </div>
+      )}
+
+      {/* Class List */}
+      {!selectedClass && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+          {Object.keys(lectures).map((cls) => (
+            <div
+              key={cls}
+              onClick={() => setSelectedClass(cls)}
+              className="bg-white p-6 rounded-xl shadow cursor-pointer hover:scale-105 transition text-center"
+            >
+              <BookOpen className="mx-auto mb-2" />
+              <h3 className="font-bold">{cls}</h3>
             </div>
+          ))}
+        </div>
+      )}
 
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Class Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., 1st Standard"
-                    value={className}
-                    onChange={(e) => setClassName(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
+      {/* Videos + Filters */}
+      {selectedClass && (
+        <div className="p-6">
+          <button
+            onClick={() => setSelectedClass(null)}
+            className="mb-4 flex gap-2 items-center text-indigo-600"
+          >
+            <ArrowLeft /> Back
+          </button>
+
+          {/* 🔍 FILTER BAR */}
+          <div className="bg-white p-4 rounded-lg shadow mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input
+              placeholder="Search by title"
+              className="border p-2 rounded"
+              value={searchTitle}
+              onChange={(e) => setSearchTitle(e.target.value)}
+            />
+
+            <select
+              className="border p-2 rounded"
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+            >
+              <option value="">All Subjects</option>
+              {subjects.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              className="border p-2 rounded"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+            />
+
+            <button
+              onClick={() => {
+                setSearchTitle("");
+                setFilterSubject("");
+                setFilterDate("");
+              }}
+              className="bg-gray-200 rounded px-3"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          {/* 🎬 Videos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredLectures.length === 0 && (
+              <p className="text-center col-span-2 text-gray-500">
+                No lectures found
+              </p>
+            )}
+
+            {filteredLectures.map((vid) => (
+              <div
+                key={vid._id}
+                className="bg-white rounded-xl shadow overflow-hidden"
+              >
+                <div className="p-4 bg-indigo-600 text-white">
+                  <h3 className="font-bold">{vid.title}</h3>
+                  <p className="text-sm">
+                    {vid.subject} • {vid.date}
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Mathematics, Science"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Video Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Introduction to Algebra"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Video URL (YouTube Embed)
-                </label>
-                <input
-                  type="text"
-                  placeholder="https://www.youtube.com/embed/..."
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
+                <iframe
+                  src={`${getEmbedUrl(
+                    vid.videoUrl
+                  )}?controls=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1&playsinline=1`}
+                  className="w-full h-64"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
               </div>
-
-              <button
-                onClick={addLecture}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Add Lecture
-              </button>
-            </div>
+            ))}
           </div>
-        )}
-
-        {/* ================= CLASS LIST ================= */}
-        {!selectedClass && (
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <BookOpen className="w-8 h-8 text-indigo-600" />
-              <h2 className="text-3xl font-bold text-gray-800">
-                Available Classes
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.keys(lectures).map((cls) => (
-                <div
-                  key={cls}
-                  onClick={() => setSelectedClass(cls)}
-                  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border-2 border-transparent hover:border-indigo-400 p-8 cursor-pointer transition-all transform hover:scale-105"
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl mb-4 group-hover:from-indigo-600 group-hover:to-purple-700 transition-all">
-                      <BookOpen className="w-12 h-12 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      {cls}
-                    </h3>
-                    <p className="text-gray-500 font-medium">
-                      {lectures[cls].length} lecture
-                      {lectures[cls].length !== 1 ? "s" : ""} available
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================= CLASS VIDEOS ================= */}
-        {selectedClass && (
-          <div>
-            <button
-              onClick={() => setSelectedClass(null)}
-              className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold px-6 py-3 rounded-lg mb-6 shadow-md hover:shadow-lg transition-all border-2 border-gray-200"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Classes
-            </button>
-
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6 border-2 border-indigo-200">
-              <h2 className="text-3xl font-bold text-gray-800">
-                {selectedClass}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {lectures[selectedClass]?.length} recorded lecture
-                {lectures[selectedClass]?.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {lectures[selectedClass]?.map((vid, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border-2 border-gray-100 overflow-hidden transition-all transform hover:scale-105"
-                >
-                  <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
-                    <div className="flex items-center gap-2 text-white mb-2">
-                      <Play className="w-5 h-5" />
-                      <h4 className="text-lg font-bold">{vid.title}</h4>
-                    </div>
-                    <div className="flex items-center gap-4 text-white text-sm">
-                      <div className="flex items-center gap-1">
-                        <Book className="w-4 h-4" />
-                        <span>{vid.subject}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          {new Date(vid.date).toLocaleDateString("en-GB")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <div className="relative rounded-lg overflow-hidden shadow-lg">
-                      <iframe
-                        width="100%"
-                        height="280"
-                        src={vid.videoUrl}
-                        allowFullScreen
-                        className="rounded-lg"
-                      ></iframe>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
