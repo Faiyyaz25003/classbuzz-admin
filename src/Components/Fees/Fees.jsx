@@ -1,6 +1,9 @@
+
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function FeeManagement() {
   const [users, setUsers] = useState([]);
@@ -68,6 +71,44 @@ export default function FeeManagement() {
   };
 
   // ===========================
+  // Download Receipt PDF
+  // ===========================
+  const downloadReceipt = (fee) => {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("ABC SCHOOL", 70, 20);
+
+    doc.setFontSize(14);
+    doc.text("Fee Payment Receipt", 70, 30);
+
+    doc.setFontSize(12);
+    doc.text(`Receipt ID: ${fee._id}`, 20, 50);
+    doc.text(`Date: ${new Date(fee.feeDate).toLocaleDateString()}`, 20, 58);
+    doc.text(`Student Name: ${fee.userId?.name}`, 20, 66);
+    doc.text(`Installment: ${fee.installment}`, 20, 74);
+    doc.text(`Payment Method: ${fee.paymentMethod}`, 20, 82);
+
+    if (fee.paymentName) {
+      doc.text(`Transaction ID: ${fee.paymentName}`, 20, 90);
+    }
+
+    autoTable(doc, {
+      startY: 100,
+      head: [["Description", "Amount"]],
+      body: [["Tuition Fee", `₹${fee.amount}`]],
+    });
+
+    doc.setFontSize(14);
+    doc.text(`Total Paid: ₹${fee.amount}`, 20, doc.lastAutoTable.finalY + 15);
+
+    doc.text("Authorized Signature", 140, doc.lastAutoTable.finalY + 35);
+
+    doc.save(`Receipt_${fee.userId?.name}.pdf`);
+  };
+
+  // ===========================
   // Filter
   // ===========================
   const filteredFees =
@@ -99,7 +140,7 @@ export default function FeeManagement() {
         </div>
       </div>
 
-      {/* ================= FILTER BUTTONS ================= */}
+      {/* ================= FILTER ================= */}
       <div className="flex gap-4 mb-6">
         {["All", 1, 2, 3].map((item) => (
           <button
@@ -217,6 +258,7 @@ export default function FeeManagement() {
               <th>Installment</th>
               <th>Method</th>
               <th>Date</th>
+              <th>Receipt</th>
             </tr>
           </thead>
           <tbody>
@@ -227,6 +269,14 @@ export default function FeeManagement() {
                 <td>{fee.installment}</td>
                 <td>{fee.paymentMethod}</td>
                 <td>{new Date(fee.feeDate).toLocaleDateString()}</td>
+                <td>
+                  <button
+                    onClick={() => downloadReceipt(fee)}
+                    className="bg-green-600 text-white px-3 py-1 rounded"
+                  >
+                    Download PDF
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
