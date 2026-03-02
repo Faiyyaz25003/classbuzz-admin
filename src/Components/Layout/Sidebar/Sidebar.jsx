@@ -133,7 +133,7 @@ export default function Sidebar() {
           }`}
         >
           <Image
-            src="/logo.jpeg"
+            src="/logo.png"
             alt="Logo"
             width={isCollapsed && !isMobile ? 50 : 80}
             height={isCollapsed && !isMobile ? 50 : 80}

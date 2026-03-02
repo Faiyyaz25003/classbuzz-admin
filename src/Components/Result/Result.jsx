@@ -6,7 +6,7 @@ import axios from "axios";
 export default function Result() {
   const [courses, setCourses] = useState([]);
   const [users, setUsers] = useState([]);
-  const [results, setResults] = useState([]); // Get All results
+  const [results, setResults] = useState([]);
 
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -19,41 +19,65 @@ export default function Result() {
   const [searchRoll, setSearchRoll] = useState("");
   const [searchedResult, setSearchedResult] = useState(null);
 
-  // 🔥 New Function to Calculate Percentage
-  const calculatePercentage = (marks) => {
-    const totalObtained = marks?.reduce((acc, m) => acc + m.obtained, 0);
-    const totalMax = marks?.reduce((acc, m) => acc + m.maxMarks, 0);
+  const [loading, setLoading] = useState(false);
+
+  /* ================= PERCENTAGE ================= */
+  const calculatePercentage = (marksArray) => {
+    if (!marksArray || marksArray.length === 0) return 0;
+
+    const totalObtained = marksArray.reduce(
+      (acc, m) => acc + (m?.obtained || 0),
+      0,
+    );
+
+    const totalMax = marksArray.reduce((acc, m) => acc + (m?.maxMarks || 0), 0);
+
+    if (totalMax === 0) return 0;
+
     return ((totalObtained / totalMax) * 100).toFixed(2);
   };
 
-  // Fetch Courses
+  /* ================= FETCH COURSES ================= */
   useEffect(() => {
     const fetchCourses = async () => {
-      const res = await axios.get("http://localhost:5000/api/course");
-      setCourses(res.data);
+      try {
+        const res = await axios.get("http://localhost:5000/api/course");
+        setCourses(res.data || []);
+      } catch (err) {
+        console.error("Error fetching courses", err);
+      }
     };
     fetchCourses();
   }, []);
 
-  // Fetch Users
+  /* ================= FETCH USERS ================= */
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await axios.get("http://localhost:5000/api/users");
-      setUsers(res.data);
+      try {
+        const res = await axios.get("http://localhost:5000/api/users");
+        setUsers(res.data || []);
+      } catch (err) {
+        console.error("Error fetching users", err);
+      }
     };
     fetchUsers();
   }, []);
 
-  // Fetch All Results
+  /* ================= FETCH RESULTS ================= */
   const fetchAllResults = async () => {
-    const res = await axios.get("http://localhost:5000/api/result");
-    setResults(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/api/result");
+      setResults(res.data || []);
+    } catch (err) {
+      console.error("Error fetching results", err);
+    }
   };
 
   useEffect(() => {
     fetchAllResults();
   }, []);
 
+  /* ================= HANDLE COURSE ================= */
   const handleCourseSelect = (id) => {
     setSelectedCourse(id);
     setSelectedSemester("");
@@ -64,8 +88,8 @@ export default function Result() {
   const handleSemesterSelect = (sem) => {
     setSelectedSemester(sem);
     const course = courses.find((c) => c._id === selectedCourse);
-    const selectedSem = course?.semesters.find(
-      (s) => s.semester.toString() === sem
+    const selectedSem = course?.semesters?.find(
+      (s) => s.semester.toString() === sem,
     );
     setSubjects(selectedSem?.subjects || []);
   };
@@ -74,12 +98,14 @@ export default function Result() {
     setMarks({ ...marks, [sub]: value });
   };
 
-  // Submit POST -> create result
+  /* ================= SUBMIT ================= */
   const handleSubmit = async () => {
     if (!selectedCourse || !selectedSemester || !selectedUser || !rollNumber) {
       alert("Please fill all required fields!");
       return;
     }
+
+    setLoading(true);
 
     const payload = {
       courseId: selectedCourse,
@@ -95,9 +121,11 @@ export default function Result() {
 
     try {
       const res = await axios.post("http://localhost:5000/api/result", payload);
-      if (res.status === 201 || res.status === 200) {
+
+      if (res.status === 200 || res.status === 201) {
         alert("Marks Submitted Successfully!");
-        fetchAllResults(); // Refresh Table
+        fetchAllResults();
+
         setSelectedCourse("");
         setSelectedSemester("");
         setSelectedUser("");
@@ -107,17 +135,25 @@ export default function Result() {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to submit marks. Please try again.");
+      alert("Failed to submit marks");
     }
+
+    setLoading(false);
   };
 
+  /* ================= SEARCH RESULT ================= */
   const handleSearchResult = async () => {
+    if (!searchRoll) {
+      alert("Enter Roll Number");
+      return;
+    }
+
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/result/${searchRoll}`
+        `http://localhost:5000/api/result/${searchRoll}`,
       );
       setSearchedResult(res.data);
-    } catch (err) {
+    } catch {
       alert("Result not found!");
       setSearchedResult(null);
     }
@@ -125,11 +161,11 @@ export default function Result() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-4xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+      <h1 className="text-4xl font-extrabold mb-8 text-center text-indigo-700">
         Student Marks Entry & Results
       </h1>
 
-      {/* Search Section */}
+      {/* SEARCH */}
       <div className="flex gap-4 mb-8">
         <input
           className="p-3 border rounded-lg w-1/3"
@@ -145,32 +181,36 @@ export default function Result() {
         </button>
       </div>
 
-      {/* Display Searched Result */}
+      {/* SEARCH RESULT DISPLAY */}
       {searchedResult && (
         <div className="bg-green-50 p-4 border rounded-xl mb-8">
-          <h2 className="text-xl font-bold">Result Found:</h2>
+          <h2 className="text-xl font-bold">Result Found</h2>
           <p>
-            <strong>Student:</strong> {searchedResult.user?.name}
+            <strong>Student:</strong> {searchedResult.userId?.name}
           </p>
           <p>
-            <strong>Roll No:</strong> {searchedResult.rollNumber}
+            <strong>Course:</strong> {searchedResult.courseId?.name}
+          </p>
+          <p>
+            <strong>Roll:</strong> {searchedResult.rollNumber}
+          </p>
+          <p>
+            <strong>Semester:</strong> {searchedResult.semester}
           </p>
 
-          <p className="font-semibold mt-2">Marks:</p>
-          {searchedResult.marks.map((m, i) => (
+          {searchedResult.marks?.map((m, i) => (
             <p key={i}>
               {m.subject}: {m.obtained} / {m.maxMarks}
             </p>
           ))}
 
-          {/* Percentage Show */}
           <p className="mt-2 font-bold text-indigo-700">
             Percentage: {calculatePercentage(searchedResult.marks)}%
           </p>
         </div>
       )}
 
-      {/* Entry Form */}
+      {/* FORM */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 shadow-xl rounded-2xl">
         <div>
           <label className="font-semibold">Select Course *</label>
@@ -200,7 +240,7 @@ export default function Result() {
             {selectedCourse &&
               courses
                 .find((c) => c._id === selectedCourse)
-                ?.semesters.map((s) => (
+                ?.semesters?.map((s) => (
                   <option key={s.semester} value={s.semester}>
                     Semester {s.semester}
                   </option>
@@ -209,7 +249,7 @@ export default function Result() {
         </div>
 
         <div>
-          <label className="font-semibold">Student Name *</label>
+          <label className="font-semibold">Student *</label>
           <select
             className="w-full p-3 border rounded-lg mt-1"
             value={selectedUser}
@@ -235,7 +275,7 @@ export default function Result() {
         </div>
       </div>
 
-      {/* Marks entry */}
+      {/* MARKS */}
       {subjects.length > 0 && (
         <div className="bg-white p-6 shadow-xl rounded-2xl mt-8">
           <h2 className="text-2xl font-bold mb-4 text-indigo-600">
@@ -243,7 +283,7 @@ export default function Result() {
           </h2>
 
           {subjects.map((sub) => (
-            <div className="flex items-center gap-4 mb-4" key={sub.name}>
+            <div key={sub.name} className="flex items-center gap-4 mb-4">
               <p className="w-1/2 font-semibold">{sub.name}</p>
               <input
                 type="number"
@@ -255,16 +295,18 @@ export default function Result() {
           ))}
 
           <button
-            className="bg-indigo-600 text-white px-10 py-2 rounded-full font-bold mt-6 hover:scale-105"
+            className="bg-indigo-600 text-white px-10 py-2 rounded-full font-bold mt-6"
             onClick={handleSubmit}
+            disabled={loading}
           >
-            Submit Marks
+            {loading ? "Submitting..." : "Submit Marks"}
           </button>
         </div>
       )}
 
-      {/* All Results Table */}
+      {/* RESULTS TABLE */}
       <h2 className="text-3xl font-bold mt-12 mb-4">All Students Results</h2>
+
       <table className="w-full border text-left">
         <thead>
           <tr className="bg-gray-200">
@@ -272,18 +314,17 @@ export default function Result() {
             <th className="p-2">Roll</th>
             <th className="p-2">Course</th>
             <th className="p-2">Semester</th>
-            <th className="p-2">Percentage</th> {/* New Column */}
+            <th className="p-2">Percentage</th>
           </tr>
         </thead>
+
         <tbody>
           {results.map((r) => (
             <tr key={r._id} className="border-b">
-              <td className="p-2">{r.user?.name}</td>
+              <td className="p-2">{r.userId?.name}</td>
               <td className="p-2">{r.rollNumber}</td>
-              <td className="p-2">{r.course?.name}</td>
+              <td className="p-2">{r.courseId?.name}</td>
               <td className="p-2">{r.semester}</td>
-
-              {/* Percentage display in table */}
               <td className="p-2">{calculatePercentage(r.marks)}%</td>
             </tr>
           ))}
