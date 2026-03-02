@@ -1,11 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const Leave = () => {
   const [leaves, setLeaves] = useState([]);
 
-  // Fetch all leave requests from backend
   const fetchLeaves = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/leave");
@@ -15,7 +13,6 @@ const Leave = () => {
     }
   };
 
-  // Handle Accept / Reject status change
   const handleStatusChange = async (id, status) => {
     try {
       await axios.put(`http://localhost:5000/api/leave/${id}`, { status });
@@ -27,18 +24,17 @@ const Leave = () => {
     }
   };
 
-  // Handle Delete leave
-const handleDelete = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this leave?")) return;
-  try {
-    await axios.delete(`http://localhost:5000/api/leave/${id}`);
-    alert("Leave deleted successfully!");
-    fetchLeaves();
-  } catch (error) {
-    console.error("Error deleting leave:", error);
-    alert("Failed to delete leave.");
-  }
-};
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this leave?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/leave/${id}`);
+      alert("Leave deleted successfully!");
+      fetchLeaves();
+    } catch (error) {
+      console.error("Error deleting leave:", error);
+      alert("Failed to delete leave.");
+    }
+  };
 
   useEffect(() => {
     fetchLeaves();
@@ -77,9 +73,7 @@ const handleDelete = async (id) => {
             ) : (
               leaves.map((leave) => (
                 <tr key={leave._id} className="border-b text-sm">
-                  <td className="p-3 border text-gray-700">
-                    {leave.userName || "N/A"}
-                  </td>
+                  <td className="p-3 border">{leave.userName || "N/A"}</td>
                   <td className="p-3 border">{leave.approver}</td>
                   <td className="p-3 border">{leave.leaveType}</td>
                   <td className="p-3 border truncate max-w-xs">
@@ -93,11 +87,11 @@ const handleDelete = async (id) => {
                   </td>
                   <td
                     className={`p-3 border font-semibold ${
-                      leave.status === "Accepted"
+                      leave.status === "Approved"
                         ? "text-green-600"
                         : leave.status === "Rejected"
-                        ? "text-red-600"
-                        : "text-yellow-600"
+                          ? "text-red-600"
+                          : "text-yellow-600"
                     }`}
                   >
                     {leave.status}
@@ -107,11 +101,11 @@ const handleDelete = async (id) => {
                       <>
                         <button
                           onClick={() =>
-                            handleStatusChange(leave._id, "Accepted")
+                            handleStatusChange(leave._id, "Approved")
                           }
                           className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                         >
-                          Accept
+                          Approve
                         </button>
                         <button
                           onClick={() =>
