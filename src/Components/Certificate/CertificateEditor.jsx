@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import { Upload, X, Printer } from "lucide-react";
 
+// ✅ API Base URL - apna URL yahan set karo
+const API_BASE_URL = "http://localhost:5000/api/certificates"; // change as needed
+
 const CertificateEditor = ({ template, onBack }) => {
   const [formData, setFormData] = useState({
     title: template?.defaultTitle || "Certificate of Achievement",
@@ -17,6 +20,8 @@ const CertificateEditor = ({ template, onBack }) => {
 
   const [signaturePreview, setSignaturePreview] = useState(null);
   const [isCreated, setIsCreated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [savedCertificate, setSavedCertificate] = useState(null); // ✅ stores API response
 
   const medalColors = {
     gold: {
@@ -85,16 +90,54 @@ const CertificateEditor = ({ template, onBack }) => {
     });
     setSignaturePreview(null);
     setIsCreated(false);
+    setSavedCertificate(null);
   };
 
-  const handleCreate = () => {
+  // ✅ CREATE CERTIFICATE - API Call
+  const handleCreate = async () => {
     if (!formData.studentName) {
       alert(
         "⚠️ Please enter the student name before creating the certificate!",
       );
       return;
     }
-    setIsCreated(true);
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          studentName: formData.studentName,
+          class: formData.class,
+          rollNo: formData.rollNo,
+          issuedBy: formData.issuedBy,
+          date: formData.date,
+          remarks: formData.remarks,
+          signature: formData.signature,
+          medalColor: formData.medalColor,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create certificate");
+      }
+
+      const data = await response.json();
+      setSavedCertificate(data); // ✅ Save API response (has _id etc.)
+      setIsCreated(true);
+      console.log("✅ Certificate saved:", data);
+    } catch (error) {
+      console.error("❌ Error creating certificate:", error);
+      alert(`❌ Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePrint = () => {
@@ -123,12 +166,10 @@ const CertificateEditor = ({ template, onBack }) => {
               margin: 0;
               padding: 0;
               box-sizing: border-box;
-              /* KEY FIX: Force all backgrounds and colors to print */
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
               color-adjust: exact !important;
             }
-
             body {
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
               background: white;
@@ -138,188 +179,68 @@ const CertificateEditor = ({ template, onBack }) => {
               min-height: 100vh;
               padding: 20px;
             }
-
             @media print {
-              body {
-                padding: 0;
-                margin: 0;
-              }
-              @page {
-                size: A4 landscape;
-                margin: 10mm;
-              }
+              body { padding: 0; margin: 0; }
+              @page { size: A4 landscape; margin: 10mm; }
               .no-print { display: none !important; }
             }
-
             .print-btn {
-              position: fixed;
-              top: 20px;
-              right: 20px;
-              background: #3b82f6;
-              color: white;
-              border: none;
-              padding: 10px 20px;
-              border-radius: 8px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              z-index: 100;
+              position: fixed; top: 20px; right: 20px;
+              background: #3b82f6; color: white; border: none;
+              padding: 10px 20px; border-radius: 8px; cursor: pointer;
+              font-size: 14px; font-weight: 600; z-index: 100;
             }
             .print-btn:hover { background: #2563eb; }
-
-            /* OUTER BORDER - same as preview */
             .cert-outer {
               border: 10px solid ${medal.borderHex};
-              border-radius: 16px;
-              padding: 24px;
+              border-radius: 16px; padding: 24px;
               background: ${medal.outerBg};
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
-              width: 850px;
-              max-width: 100%;
+              width: 850px; max-width: 100%;
             }
-
-            /* INNER WHITE BOX */
             .cert-inner {
-              border: 4px solid #e2e8f0;
-              background: #ffffff;
-              padding: 48px 56px;
-              text-align: center;
-              min-height: 480px;
-              position: relative;
-              border-radius: 4px;
+              border: 4px solid #e2e8f0; background: #ffffff;
+              padding: 48px 56px; text-align: center;
+              min-height: 480px; position: relative; border-radius: 4px;
             }
-
-            /* MEDAL CIRCLE - gradient filled circle */
             .medal-circle {
-              width: 72px;
-              height: 72px;
-              border-radius: 50%;
+              width: 72px; height: 72px; border-radius: 50%;
               background: linear-gradient(135deg, ${medal.hex1}, ${medal.hex2});
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto 24px;
-              box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+              display: flex; align-items: center; justify-content: center;
+              margin: 0 auto 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             }
-
-            /* TITLE - gradient text */
             .cert-title {
-              font-size: 34px;
-              font-weight: 900;
-              text-transform: uppercase;
-              letter-spacing: 4px;
-              margin-bottom: 16px;
-              /* Use solid color fallback for print since gradient text is tricky */
-              color: ${medal.hex2};
-              /* Try gradient text for screen */
+              font-size: 34px; font-weight: 900; text-transform: uppercase;
+              letter-spacing: 4px; margin-bottom: 16px; color: ${medal.hex2};
               background: linear-gradient(135deg, ${medal.hex1}, ${medal.hex2});
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
+              -webkit-background-clip: text; -webkit-text-fill-color: transparent;
               background-clip: text;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
             }
-
-            /* DECORATIVE LINE */
             .decorative-line {
-              width: 80px;
-              height: 3px;
+              width: 80px; height: 3px;
               background: linear-gradient(135deg, ${medal.hex1}, ${medal.hex2});
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              margin: 0 auto 24px;
-              border-radius: 2px;
+              margin: 0 auto 24px; border-radius: 2px;
             }
-
-            .cert-subtitle {
-              font-size: 13px;
-              color: #64748b;
-              font-style: italic;
-              margin-bottom: 24px;
-            }
-
-            .cert-name {
-              font-size: 34px;
-              font-weight: 800;
-              color: #0f172a;
-              margin-bottom: 10px;
-              letter-spacing: 1px;
-            }
-
-            .cert-details {
-              font-size: 13px;
-              color: #374151;
-              margin-bottom: 24px;
-              display: flex;
-              justify-content: center;
-              gap: 40px;
-            }
-
-            .cert-remarks {
-              font-size: 14px;
-              color: #475569;
-              max-width: 520px;
-              margin: 0 auto;
-              line-height: 1.7;
-            }
-
-            .cert-footer {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-end;
-              margin-top: 48px;
-              padding: 0 10px;
-            }
-
-            .label {
-              font-size: 11px;
-              color: #94a3b8;
-              margin-bottom: 4px;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-            }
-
-            .issued-name {
-              font-size: 17px;
-              font-weight: 700;
-              color: #0f172a;
-            }
-
-            .issued-date {
-              font-size: 12px;
-              color: #64748b;
-              margin-top: 4px;
-            }
-
+            .cert-subtitle { font-size: 13px; color: #64748b; font-style: italic; margin-bottom: 24px; }
+            .cert-name { font-size: 34px; font-weight: 800; color: #0f172a; margin-bottom: 10px; letter-spacing: 1px; }
+            .cert-details { font-size: 13px; color: #374151; margin-bottom: 24px; display: flex; justify-content: center; gap: 40px; }
+            .cert-remarks { font-size: 14px; color: #475569; max-width: 520px; margin: 0 auto; line-height: 1.7; }
+            .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 48px; padding: 0 10px; }
+            .label { font-size: 11px; color: #94a3b8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+            .issued-name { font-size: 17px; font-weight: 700; color: #0f172a; }
+            .issued-date { font-size: 12px; color: #64748b; margin-top: 4px; }
             .sig-right { text-align: right; }
-
-            .sig-line {
-              border-top: 2px solid #0f172a;
-              width: 130px;
-              margin-top: 32px;
-              margin-left: auto;
-            }
-
-            .sig-image {
-              height: 54px;
-              margin-top: 8px;
-              margin-left: auto;
-              display: block;
-              max-width: 150px;
-              object-fit: contain;
-            }
+            .sig-line { border-top: 2px solid #0f172a; width: 130px; margin-top: 32px; margin-left: auto; }
+            .sig-image { height: 54px; margin-top: 8px; margin-left: auto; display: block; max-width: 150px; object-fit: contain; }
           </style>
         </head>
         <body>
           <button class="print-btn no-print" onclick="window.print()">🖨️ Print Certificate</button>
-
           <div class="cert-outer">
             <div class="cert-inner">
-
-              <!-- Medal Circle -->
               <div class="medal-circle">
                 <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 24 24"
                   fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -327,16 +248,10 @@ const CertificateEditor = ({ template, onBack }) => {
                   <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
                 </svg>
               </div>
-
-              <!-- Title -->
               <div class="cert-title">${formData.title}</div>
               <div class="decorative-line"></div>
               <div class="cert-subtitle">This certificate is proudly presented to</div>
-
-              <!-- Name -->
               <div class="cert-name">${formData.studentName}</div>
-
-              <!-- Class & Roll No -->
               ${
                 formData.class || formData.rollNo
                   ? `
@@ -346,13 +261,9 @@ const CertificateEditor = ({ template, onBack }) => {
               </div>`
                   : ""
               }
-
-              <!-- Remarks -->
               <div class="cert-remarks">
                 ${formData.remarks || "For outstanding performance and dedication to excellence."}
               </div>
-
-              <!-- Footer -->
               <div class="cert-footer">
                 <div>
                   <div class="label">Issued By</div>
@@ -361,20 +272,12 @@ const CertificateEditor = ({ template, onBack }) => {
                 </div>
                 <div class="sig-right">
                   <div class="label">Authorized Signature</div>
-                  ${
-                    formData.signature
-                      ? `<img src="${formData.signature}" class="sig-image" alt="Signature" />`
-                      : `<div class="sig-line"></div>`
-                  }
+                  ${formData.signature ? `<img src="${formData.signature}" class="sig-image" alt="Signature" />` : `<div class="sig-line"></div>`}
                 </div>
               </div>
-
             </div>
           </div>
-
-          <script>
-            window.onafterprint = function() { window.close(); };
-          </script>
+          <script>window.onafterprint = function() { window.close(); };</script>
         </body>
       </html>
     `;
@@ -528,12 +431,52 @@ const CertificateEditor = ({ template, onBack }) => {
                 </div>
               )}
 
+              {/* ✅ API Success Badge */}
+              {savedCertificate && (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs px-3 py-2 rounded-lg">
+                  <span>✅</span>
+                  <span>
+                    Saved to DB — ID:{" "}
+                    <strong>
+                      {savedCertificate._id || savedCertificate.id}
+                    </strong>
+                  </span>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCreate}
-                  className={`flex-1 py-2 px-4 text-sm bg-gradient-to-r ${template?.color || "from-amber-400 to-yellow-600"} text-white rounded-lg font-semibold hover:opacity-90 transition`}
+                  disabled={isLoading}
+                  className={`flex-1 py-2 px-4 text-sm bg-gradient-to-r ${template?.color || "from-amber-400 to-yellow-600"} text-white rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                 >
-                  ✅ Create Certificate
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        ></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    "✅ Create Certificate"
+                  )}
                 </button>
                 <button
                   onClick={handleReset}
@@ -552,11 +495,7 @@ const CertificateEditor = ({ template, onBack }) => {
               <button
                 onClick={handlePrint}
                 disabled={!isCreated}
-                className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-2 transition font-semibold ${
-                  isCreated
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
-                }`}
+                className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-2 transition font-semibold ${isCreated ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}
               >
                 <Printer className="w-4 h-4" />
                 Print / Save PDF
@@ -583,7 +522,6 @@ const CertificateEditor = ({ template, onBack }) => {
                     borderRadius: "4px",
                   }}
                 >
-                  {/* Medal Icon */}
                   <div className="flex justify-center mb-5">
                     <div
                       className={`w-16 h-16 rounded-full bg-gradient-to-br ${currentMedalColor.gradient} flex items-center justify-center shadow-lg`}
@@ -591,27 +529,20 @@ const CertificateEditor = ({ template, onBack }) => {
                       <Icon className="w-9 h-9 text-white" />
                     </div>
                   </div>
-
-                  {/* Title */}
                   <h1
                     className={`text-3xl font-black uppercase tracking-widest mb-3 bg-gradient-to-r ${currentMedalColor.gradient} bg-clip-text text-transparent`}
                   >
                     {formData.title}
                   </h1>
-
-                  {/* Decorative Line */}
                   <div
                     className={`w-16 h-1 mx-auto mb-4 rounded-full bg-gradient-to-r ${currentMedalColor.gradient}`}
                   />
-
                   <p className="text-xs text-slate-500 italic mb-5">
                     This certificate is proudly presented to
                   </p>
-
                   <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-wide">
                     {formData.studentName}
                   </h2>
-
                   {(formData.class || formData.rollNo) && (
                     <div className="flex justify-center gap-8 text-xs text-slate-700 mb-5">
                       {formData.class && (
@@ -626,12 +557,10 @@ const CertificateEditor = ({ template, onBack }) => {
                       )}
                     </div>
                   )}
-
                   <p className="text-slate-600 text-sm leading-relaxed max-w-xl mx-auto mb-6">
                     {formData.remarks ||
                       "For outstanding performance and dedication to excellence."}
                   </p>
-
                   <div className="flex justify-between items-end mt-10 px-2">
                     <div className="text-left">
                       <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">
