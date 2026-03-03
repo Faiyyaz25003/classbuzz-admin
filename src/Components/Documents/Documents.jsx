@@ -364,9 +364,7 @@ export default function AdminDocuments() {
   const handleAccept = async (id) => {
     setActionLoading(id);
     try {
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/documents/accept/${id}`,
-      );
+      await axios.put(`http://localhost:5000/api/documents/accept/${id}`);
       setDocuments((prev) =>
         prev.map((d) => (d._id === id ? { ...d, status: "accepted" } : d)),
       );
@@ -380,9 +378,7 @@ export default function AdminDocuments() {
   const handleReject = async (id) => {
     setActionLoading(id);
     try {
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/documents/reject/${id}`,
-      );
+      await axios.put(`http://localhost:5000/api/documents/reject/${id}`);
       setDocuments((prev) =>
         prev.map((d) => (d._id === id ? { ...d, status: "rejected" } : d)),
       );
@@ -397,9 +393,7 @@ export default function AdminDocuments() {
     if (!confirm("Are you sure you want to delete this document?")) return;
     setActionLoading(id);
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/documents/${id}`,
-      );
+      await axios.delete(`http://localhost:5000/api/documents/${id}`);
       setDocuments((prev) => prev.filter((d) => d._id !== id));
     } catch (err) {
       alert(err.response?.data?.message || "Delete failed");
