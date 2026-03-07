@@ -5,16 +5,15 @@ import axios from "axios";
 export default function UpcomingExams() {
   const [courses, setCourses] = useState([]);
   const [allTimetables, setAllTimetables] = useState([]);
-  const [timetable, setTimetable] = useState([]);
 
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedSemester, setSelectedSemester] = useState("");
+  const [courseId, setCourseId] = useState("");
+  const [semester, setSemester] = useState("");
 
-  const [timetableId, setTimetableId] = useState(null);
+  const [subjects, setSubjects] = useState([
+    { subject: "", date: "", time: "", room: "" },
+  ]);
 
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -37,26 +36,13 @@ export default function UpcomingExams() {
     }
   };
 
-  // FETCH ALL TIMETABLES
+  // FETCH TIMETABLES
   const fetchTimetables = async () => {
     setLoading(true);
 
     try {
       const res = await axios.get("http://localhost:5000/api/exam-timetable");
-
-      const tables = res.data || [];
-
-      setAllTimetables(tables);
-
-      // DEFAULT LOAD
-      if (tables.length > 0) {
-        const first = tables[0];
-
-        setSelectedCourse(first.course?._id);
-        setSelectedSemester(first.semester.toString());
-        setTimetable(first.timetable);
-        setTimetableId(first._id);
-      }
+      setAllTimetables(res.data || []);
     } catch (error) {
       console.log(error);
     }
@@ -64,109 +50,66 @@ export default function UpcomingExams() {
     setLoading(false);
   };
 
-  // COURSE SELECT
-  const handleCourseSelect = (courseId) => {
-    setSelectedCourse(courseId);
-    setSelectedSemester("");
-
-    const filtered = allTimetables.find((t) => t.course?._id === courseId);
-
-    if (filtered) {
-      setTimetable(filtered.timetable);
-      setTimetableId(filtered._id);
-      setSelectedSemester(filtered.semester.toString());
-    } else {
-      setTimetable([]);
-      setTimetableId(null);
-    }
+  // ADD SUBJECT ROW
+  const addRow = () => {
+    setSubjects([...subjects, { subject: "", date: "", time: "", room: "" }]);
   };
 
-  // SEMESTER SELECT
-  const handleSemesterSelect = (semester) => {
-    setSelectedSemester(semester);
+  // HANDLE CHANGE
+  const handleChange = (index, field, value) => {
+    const updated = [...subjects];
+    updated[index][field] = value;
+    setSubjects(updated);
+  };
 
-    const filtered = allTimetables.find(
-      (t) =>
-        t.course?._id === selectedCourse && t.semester.toString() === semester,
-    );
-
-    if (filtered) {
-      setTimetable(filtered.timetable);
-      setTimetableId(filtered._id);
+  // CREATE TIMETABLE
+  const createTimetable = async () => {
+    if (!courseId || !semester) {
+      showToast("Select course and semester", "error");
       return;
     }
 
-    // CREATE EMPTY TABLE IF NOT FOUND
-    const course = courses.find((c) => c._id === selectedCourse);
-
-    const semesterData = course?.semesters?.find(
-      (s) => s.semester.toString() === semester,
-    );
-
-    const subjects = semesterData?.subjects || [];
-
-    const table = subjects.map((sub) => ({
-      subject: sub.name,
-      date: "",
-      time: "",
-      room: "",
-    }));
-
-    setTimetable(table);
-    setTimetableId(null);
-  };
-
-  // INPUT CHANGE
-  const handleChange = (index, field, value) => {
-    const updated = [...timetable];
-    updated[index][field] = value;
-    setTimetable(updated);
-  };
-
-  // SAVE TIMETABLE
-  const handleSave = async () => {
-    setSaving(true);
-
     try {
-      const res = await axios.post("http://localhost:5000/api/exam-timetable", {
-        course: selectedCourse,
-        semester: selectedSemester,
-        timetable,
+      await axios.post("http://localhost:5000/api/exam-timetable", {
+        course: courseId,
+        semester,
+        timetable: subjects,
       });
 
-      setTimetableId(res.data.data._id);
+      showToast("Timetable created");
 
-      showToast("Timetable saved successfully!");
+      setSubjects([{ subject: "", date: "", time: "", room: "" }]);
+      setCourseId("");
+      setSemester("");
+
+      fetchTimetables();
     } catch (error) {
-      showToast("Error saving timetable", "error");
+      showToast("Error creating timetable", "error");
     }
-
-    setSaving(false);
   };
 
   // UPDATE ROW
-  const updateRow = async (index) => {
+  const updateRow = async (tableId, index, row) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/exam-timetable/${timetableId}/row/${index}`,
-        timetable[index],
+        `http://localhost:5000/api/exam-timetable/${tableId}/row/${index}`,
+        row,
       );
 
-      showToast("Row updated successfully!");
+      showToast("Row updated");
     } catch (error) {
       showToast("Error updating row", "error");
     }
   };
 
   // DELETE ROW
-  const deleteRow = async (index) => {
+  const deleteRow = async (tableId, index) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/exam-timetable/${timetableId}/row/${index}`,
+        `http://localhost:5000/api/exam-timetable/${tableId}/row/${index}`,
       );
 
-      setTimetable(timetable.filter((_, i) => i !== index));
-
+      fetchTimetables();
       showToast("Row deleted");
     } catch (error) {
       showToast("Error deleting row", "error");
@@ -174,177 +117,192 @@ export default function UpcomingExams() {
   };
 
   // DELETE TIMETABLE
-  const deleteTimetable = async () => {
-    if (!confirm("Delete the full timetable?")) return;
+  const deleteTimetable = async (tableId) => {
+    if (!confirm("Delete this timetable?")) return;
 
     try {
-      await axios.delete(
-        `http://localhost:5000/api/exam-timetable/${timetableId}`,
-      );
+      await axios.delete(`http://localhost:5000/api/exam-timetable/${tableId}`);
 
-      setTimetable([]);
-      setTimetableId(null);
-
+      fetchTimetables();
       showToast("Timetable deleted");
     } catch (error) {
       showToast("Error deleting timetable", "error");
     }
   };
 
-  const selectedCourseName =
-    courses.find((c) => c._id === selectedCourse)?.name || "";
-
   return (
     <div className="min-h-screen bg-white text-slate-800 px-4 py-10">
-      {/* TOAST */}
       {toast && (
-        <div
-          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium ${
-            toast.type === "error"
-              ? "bg-red-50 border border-red-200 text-red-600"
-              : "bg-emerald-50 border border-emerald-200 text-emerald-600"
-          }`}
-        >
+        <div className="fixed top-5 right-5 bg-emerald-100 px-5 py-3 rounded-xl">
           {toast.message}
         </div>
       )}
 
       <div className="max-w-6xl mx-auto">
-        {/* HEADER */}
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold">
-            Exam <span className="text-indigo-600">Timetable</span>
-          </h1>
+        <h1 className="text-4xl font-bold mb-8">
+          Exam <span className="text-indigo-600">Timetable</span>
+        </h1>
+
+        {/* CREATE TIMETABLE */}
+
+        <div className="border p-6 rounded-2xl mb-12">
+          <h2 className="text-xl font-semibold mb-4">Create New Timetable</h2>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <select
+              value={courseId}
+              onChange={(e) => setCourseId(e.target.value)}
+              className="border rounded p-2"
+            >
+              <option value="">Select Course</option>
+
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              placeholder="Semester"
+              value={semester}
+              onChange={(e) => setSemester(e.target.value)}
+              className="border rounded p-2"
+            />
+          </div>
+
+          {subjects.map((row, index) => (
+            <div key={index} className="grid grid-cols-4 gap-3 mb-3">
+              <input
+                placeholder="Subject"
+                value={row.subject}
+                onChange={(e) => handleChange(index, "subject", e.target.value)}
+                className="border p-2 rounded"
+              />
+
+              <input
+                type="date"
+                value={row.date}
+                onChange={(e) => handleChange(index, "date", e.target.value)}
+                className="border p-2 rounded"
+              />
+
+              <input
+                type="time"
+                value={row.time}
+                onChange={(e) => handleChange(index, "time", e.target.value)}
+                className="border p-2 rounded"
+              />
+
+              <input
+                placeholder="Room"
+                value={row.room}
+                onChange={(e) => handleChange(index, "room", e.target.value)}
+                className="border p-2 rounded"
+              />
+            </div>
+          ))}
+
+          <div className="flex gap-4 mt-4">
+            <button onClick={addRow} className="bg-gray-200 px-4 py-2 rounded">
+              Add Subject
+            </button>
+
+            <button
+              onClick={createTimetable}
+              className="bg-indigo-600 text-white px-6 py-2 rounded"
+            >
+              Create Timetable
+            </button>
+          </div>
         </div>
 
-        {/* SELECTORS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
-          {/* COURSE */}
-          <select
-            className="border rounded-xl px-4 py-3"
-            value={selectedCourse}
-            onChange={(e) => handleCourseSelect(e.target.value)}
-          >
-            <option value="">Choose Course</option>
+        {/* TIMETABLE LIST */}
 
-            {courses.map((course) => (
-              <option key={course._id} value={course._id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
+        {loading && <p>Loading...</p>}
 
-          {/* SEMESTER */}
-          <select
-            className="border rounded-xl px-4 py-3"
-            value={selectedSemester}
-            onChange={(e) => handleSemesterSelect(e.target.value)}
-            disabled={!selectedCourse}
-          >
-            <option value="">Choose Semester</option>
+        {!loading &&
+          allTimetables.map((table) => (
+            <div key={table._id} className="mb-12">
+              <div className="flex justify-between mb-4">
+                <h2 className="text-xl font-semibold text-indigo-600">
+                  {table.course?.name} - Semester {table.semester}
+                </h2>
 
-            {selectedCourse &&
-              courses
-                .find((c) => c._id === selectedCourse)
-                ?.semesters?.map((s) => (
-                  <option key={s.semester} value={s.semester}>
-                    Semester {s.semester}
-                  </option>
-                ))}
-          </select>
-        </div>
+                <button
+                  onClick={() => deleteTimetable(table._id)}
+                  className="text-red-500"
+                >
+                  Delete Timetable
+                </button>
+              </div>
 
-        {/* LOADING */}
-        {loading && <p>Loading timetable...</p>}
+              <table className="w-full border rounded">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th>#</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
 
-        {/* TABLE */}
-        {!loading && timetable.length > 0 && (
-          <div className="border rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="px-5 py-3 text-left">#</th>
-                  <th className="px-5 py-3 text-left">Subject</th>
-                  <th className="px-5 py-3 text-left">Date</th>
-                  <th className="px-5 py-3 text-left">Time</th>
-                  <th className="px-5 py-3 text-left">Room</th>
-                  {timetableId && (
-                    <th className="px-5 py-3 text-center">Action</th>
-                  )}
-                </tr>
-              </thead>
+                <tbody>
+                  {table.timetable.map((row, index) => (
+                    <tr key={index} className="border-t">
+                      <td>{index + 1}</td>
 
-              <tbody>
-                {timetable.map((item, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="px-5 py-4">{index + 1}</td>
+                      <td>{row.subject}</td>
 
-                    <td className="px-5 py-4 font-semibold">{item.subject}</td>
+                      <td>
+                        <input
+                          type="date"
+                          defaultValue={row.date}
+                          onBlur={(e) => {
+                            row.date = e.target.value;
+                            updateRow(table._id, index, row);
+                          }}
+                        />
+                      </td>
 
-                    <td className="px-5 py-4">
-                      <input
-                        type="date"
-                        value={item.date}
-                        onChange={(e) =>
-                          handleChange(index, "date", e.target.value)
-                        }
-                      />
-                    </td>
+                      <td>
+                        <input
+                          type="time"
+                          defaultValue={row.time}
+                          onBlur={(e) => {
+                            row.time = e.target.value;
+                            updateRow(table._id, index, row);
+                          }}
+                        />
+                      </td>
 
-                    <td className="px-5 py-4">
-                      <input
-                        type="time"
-                        value={item.time}
-                        onChange={(e) =>
-                          handleChange(index, "time", e.target.value)
-                        }
-                      />
-                    </td>
+                      <td>
+                        <input
+                          defaultValue={row.room}
+                          onBlur={(e) => {
+                            row.room = e.target.value;
+                            updateRow(table._id, index, row);
+                          }}
+                        />
+                      </td>
 
-                    <td className="px-5 py-4">
-                      <input
-                        type="text"
-                        value={item.room}
-                        onChange={(e) =>
-                          handleChange(index, "room", e.target.value)
-                        }
-                      />
-                    </td>
-
-                    {timetableId && (
-                      <td className="px-5 py-4 flex gap-2">
+                      <td>
                         <button
-                          onClick={() => updateRow(index)}
-                          className="text-emerald-600"
-                        >
-                          Update
-                        </button>
-
-                        <button
-                          onClick={() => deleteRow(index)}
+                          onClick={() => deleteRow(table._id, index)}
                           className="text-red-500"
                         >
                           Delete
                         </button>
                       </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {!timetableId && (
-              <div className="p-5 text-right">
-                <button
-                  onClick={handleSave}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded-xl"
-                >
-                  Save Timetable
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
       </div>
     </div>
   );
