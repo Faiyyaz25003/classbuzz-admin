@@ -25,7 +25,7 @@ import Result from "@/Components/Result/Result";
 import Course from "@/Components/Course/Course";
 import Schedule from "@/Components/Schedule/Schedule";
 import RecordedLectures from "@/Components/RecordedLecture/RecordedLecture";
-import Assignment from "@/Components/Assignment/Assignment";
+import Assignment from "@/Components/Folder/Folder";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
