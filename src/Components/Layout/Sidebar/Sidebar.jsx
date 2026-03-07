@@ -26,6 +26,7 @@ import Course from "@/Components/Course/Course";
 import Schedule from "@/Components/Schedule/Schedule";
 import RecordedLectures from "@/Components/RecordedLecture/RecordedLecture";
 import Assignment from "@/Components/Folder/Folder";
+import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -56,6 +57,7 @@ export default function Sidebar() {
     { id: "documents", name: "Documents", icon: FileText },
     { id: "result", name: "Result", icon: FileText },
     { id: "certificate", name: "Certificate", icon: FileText },
+    { id: "upcomingExams", name: "UpcomingExams", icon: FileText },
     { id: "assignment", name: "Assignment", icon: LayoutDashboard },
   ];
 
@@ -88,6 +90,8 @@ export default function Sidebar() {
         return <Result />;
       case "record":
         return <RecordedLectures />;
+      case "upcomingExams":
+        return <UpcomingExams />;
       case "assignment":
         return <Assignment />;
       default:
