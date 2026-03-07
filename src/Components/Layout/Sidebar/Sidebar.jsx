@@ -27,6 +27,7 @@ import Schedule from "@/Components/Schedule/Schedule";
 import RecordedLectures from "@/Components/RecordedLecture/RecordedLecture";
 import Assignment from "@/Components/Folder/Folder";
 import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
+import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -59,6 +60,7 @@ export default function Sidebar() {
     { id: "certificate", name: "Certificate", icon: FileText },
     { id: "upcomingExams", name: "UpcomingExams", icon: FileText },
     { id: "assignment", name: "Assignment", icon: LayoutDashboard },
+    { id: "libraryManagement", name: "Library Management", icon: LayoutDashboard },
   ];
 
   const handleLinkClick = (id) => {
@@ -94,6 +96,8 @@ export default function Sidebar() {
         return <UpcomingExams />;
       case "assignment":
         return <Assignment />;
+      case "libraryManagement":
+        return <LibraryManagement />;
       default:
         return <Fees />;
     }
