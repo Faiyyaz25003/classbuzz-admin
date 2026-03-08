@@ -85,14 +85,19 @@ const allBooks = [
   },
 ];
 
-const myBooks = [
+// Issued books with student details
+const issuedBooks = [
   {
     id: 1,
     name: "Math Book",
     category: "Science",
     color: "#f59e0b",
     bg: "#fffbeb",
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
+    student: "Rahul Sharma",
+    department: "Computer Science",
+    issueDate: "2024-03-01",
+    endDate: "2024-03-15",
+    days: 2,
   },
   {
     id: 2,
@@ -100,61 +105,47 @@ const myBooks = [
     category: "Science",
     color: "#3b82f6",
     bg: "#eff6ff",
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
+    student: "Priya Patel",
+    department: "Electronics",
+    issueDate: "2024-03-05",
+    endDate: "2024-03-20",
+    days: 5,
   },
   {
     id: 3,
-    name: "JavaScript Guide",
+    name: "React Handbook",
     category: "Tech",
-    color: "#f59e0b",
-    bg: "#fffbeb",
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
+    color: "#3b82f6",
+    bg: "#eff6ff",
+    student: "Amit Kumar",
+    department: "IT",
+    issueDate: "2024-03-03",
+    endDate: "2024-03-17",
+    days: 7,
   },
   {
     id: 4,
-    name: "React Handbook",
-    category: "Tech",
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
+    name: "English Grammar",
+    category: "Language",
+    color: "#8b5cf6",
+    bg: "#f5f3ff",
+    student: "Sneha Rao",
+    department: "Arts",
+    issueDate: "2024-02-28",
+    endDate: "2024-03-14",
+    days: 12,
   },
   {
     id: 5,
-    name: "NextJS Basics",
-    category: "Tech",
-    color: "#6366f1",
-    bg: "#eef2ff",
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
-  },
-];
-
-const expireBooks = [
-  {
-    id: 1,
-    name: "Math Book",
+    name: "Biology Book",
     category: "Science",
-    color: "#f59e0b",
-    bg: "#fffbeb",
-    days: 2,
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
-  },
-  {
-    id: 2,
-    name: "Physics Book",
-    category: "Science",
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    days: 5,
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
-  },
-  {
-    id: 3,
-    name: "React Handbook",
-    category: "Tech",
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    days: 7,
-    pdf: "https://www.w3.org/WAI/WCAG21/wcag21.pdf",
+    color: "#ef4444",
+    bg: "#fef2f2",
+    student: "Rohit Singh",
+    department: "Medical",
+    issueDate: "2024-03-06",
+    endDate: "2024-03-21",
+    days: 18,
   },
 ];
 
@@ -184,9 +175,9 @@ const cardConfigs = [
     gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
   },
   {
-    key: "my",
-    label: "My Books",
-    sublabel: `${myBooks.length} borrowed`,
+    key: "issued",
+    label: "Issued Details",
+    sublabel: `${issuedBooks.length} issued`,
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -198,7 +189,7 @@ const cardConfigs = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
+          d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
         />
       </svg>
     ),
@@ -207,35 +198,35 @@ const cardConfigs = [
     border: "#fbcfe8",
     gradient: "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
   },
-  {
-    key: "expire",
-    label: "Expiring Soon",
-    sublabel: "Within 7 days",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        style={{ width: 34, height: 34 }}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    ),
-    color: "#f59e0b",
-    lightBg: "#fffbeb",
-    border: "#fde68a",
-    gradient: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)",
-  },
 ];
 
-// ─── PDF Viewer Modal ───────────────────────────────────────────────
-function PDFViewer({ book, onClose }) {
-  const [isFull, setIsFull] = useState(false);
+// ─── Issue Book Modal ───────────────────────────────────────────────
+function IssueBookModal({ book, onClose, onConfirm }) {
+  const [studentName, setStudentName] = useState("");
+  const [department, setDepartment] = useState("");
+  const [issueDate, setIssueDate] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const getAutoEndDate = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    d.setDate(d.getDate() + 14);
+    return d.toISOString().split("T")[0];
+  };
+
+  const handleConfirm = () => {
+    if (!studentName || !department || !issueDate) return;
+    setSubmitted(true);
+    setTimeout(() => {
+      onConfirm({
+        studentName,
+        department,
+        issueDate,
+        endDate: getAutoEndDate(issueDate),
+      });
+      onClose();
+    }, 1200);
+  };
 
   return (
     <div
@@ -243,7 +234,7 @@ function PDFViewer({ book, onClose }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15,23,42,0.75)",
+        background: "rgba(15,23,42,0.6)",
         backdropFilter: "blur(6px)",
         display: "flex",
         alignItems: "center",
@@ -256,265 +247,534 @@ function PDFViewer({ book, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "#fff",
-          borderRadius: isFull ? 0 : 20,
-          width: isFull ? "100vw" : "min(92vw, 1000px)",
-          height: isFull ? "100vh" : "min(90vh, 780px)",
-          display: "flex",
-          flexDirection: "column",
+          borderRadius: 20,
+          width: "min(92vw, 460px)",
           overflow: "hidden",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
           animation: "slideUp 0.25s ease",
-          transition:
-            "width 0.3s ease, height 0.3s ease, border-radius 0.3s ease",
         }}
       >
-        {/* Top Bar */}
+        {/* Header */}
         <div
           style={{
+            background: "linear-gradient(135deg, #4f7ef7 0%, #6366f1 100%)",
+            padding: "20px 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "14px 20px",
-            borderBottom: "1.5px solid #f1f5f9",
-            background: "#fff",
-            flexShrink: 0,
           }}
         >
-          {/* Left: book info */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div
               style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                background: book.bg,
-                border: `1.5px solid ${book.color}33`,
+                width: 42,
+                height: 42,
+                background: "rgba(255,255,255,0.2)",
+                borderRadius: 12,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 18,
+                fontSize: 20,
               }}
             >
               📚
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}>
-                {book.name}
+              <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>
+                Issue Book
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: book.color,
-                  fontWeight: 600,
-                  background: book.bg,
-                  display: "inline-block",
-                  padding: "2px 8px",
-                  borderRadius: 20,
-                  border: `1px solid ${book.color}33`,
-                }}
-              >
-                {book.category}
+              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 13 }}>
+                {book.name}
               </div>
             </div>
           </div>
-
-          {/* Right: action buttons */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Download */}
-            <a
-              href={book.pdf}
-              download
-              title="Download"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "#f8fafc",
-                border: "1.5px solid #e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#64748b",
-                textDecoration: "none",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#eef2ff";
-                e.currentTarget.style.color = "#6366f1";
-                e.currentTarget.style.borderColor = "#c7d2fe";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#f8fafc";
-                e.currentTarget.style.color = "#64748b";
-                e.currentTarget.style.borderColor = "#e2e8f0";
-              }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                style={{ width: 16, height: 16 }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                />
-              </svg>
-            </a>
-
-            {/* Fullscreen toggle */}
-            <button
-              title={isFull ? "Exit Fullscreen" : "Fullscreen"}
-              onClick={() => setIsFull((f) => !f)}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "#f8fafc",
-                border: "1.5px solid #e2e8f0",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#64748b",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#eef2ff";
-                e.currentTarget.style.color = "#6366f1";
-                e.currentTarget.style.borderColor = "#c7d2fe";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#f8fafc";
-                e.currentTarget.style.color = "#64748b";
-                e.currentTarget.style.borderColor = "#e2e8f0";
-              }}
-            >
-              {isFull ? (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ width: 16, height: 16 }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ width: 16, height: 16 }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
-                  />
-                </svg>
-              )}
-            </button>
-
-            {/* Close */}
-            <button
-              onClick={onClose}
-              title="Close"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "#fef2f2",
-                border: "1.5px solid #fecaca",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ef4444",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#fee2e2";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#fef2f2";
-              }}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                style={{ width: 15, height: 15 }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* PDF iframe */}
-        <div style={{ flex: 1, background: "#f1f5f9", position: "relative" }}>
-          <iframe
-            src={book.pdf}
-            title={book.name}
+          <button
+            onClick={onClose}
             style={{
-              width: "100%",
-              height: "100%",
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "rgba(255,255,255,0.2)",
               border: "none",
-              display: "block",
-            }}
-          />
-        </div>
-
-        {/* Bottom bar */}
-        <div
-          style={{
-            padding: "10px 20px",
-            background: "#f8fafc",
-            borderTop: "1.5px solid #f1f5f9",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ fontSize: 12, color: "#94a3b8" }}>
-            📄 PDF Viewer — Click outside or press ✕ to close
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: book.color,
-              background: book.bg,
-              padding: "3px 10px",
-              borderRadius: 20,
-              border: `1px solid ${book.color}33`,
+              color: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
             }}
           >
-            {book.name}
+            ✕
+          </button>
+        </div>
+
+        {/* Form */}
+        <div
+          style={{
+            padding: "28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+          }}
+        >
+          {/* Student Name */}
+          <div>
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#64748b",
+                letterSpacing: "1px",
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              STUDENT NAME
+            </label>
+            <input
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              placeholder="Enter full name"
+              style={{
+                width: "100%",
+                background: "#f8fafc",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: 12,
+                padding: "12px 16px",
+                fontSize: 14,
+                color: "#1e293b",
+                outline: "none",
+                boxSizing: "border-box",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#6366f1";
+                e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e2e8f0";
+                e.target.style.boxShadow = "none";
+              }}
+            />
           </div>
+
+          {/* Department */}
+          <div>
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#64748b",
+                letterSpacing: "1px",
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              DEPARTMENT
+            </label>
+            <input
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g. Computer Science"
+              style={{
+                width: "100%",
+                background: "#f8fafc",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: 12,
+                padding: "12px 16px",
+                fontSize: 14,
+                color: "#1e293b",
+                outline: "none",
+                boxSizing: "border-box",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#6366f1";
+                e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e2e8f0";
+                e.target.style.boxShadow = "none";
+              }}
+            />
+          </div>
+
+          {/* Dates */}
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}
+          >
+            <div>
+              <label
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#64748b",
+                  letterSpacing: "1px",
+                  display: "block",
+                  marginBottom: 8,
+                }}
+              >
+                ISSUE DATE
+              </label>
+              <input
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  background: "#f8fafc",
+                  border: "1.5px solid #e2e8f0",
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontSize: 13,
+                  color: "#1e293b",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#6366f1";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e2e8f0";
+                }}
+              />
+            </div>
+            <div>
+              <label
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#64748b",
+                  letterSpacing: "1px",
+                  display: "block",
+                  marginBottom: 8,
+                }}
+              >
+                END DATE{" "}
+                <span style={{ color: "#10b981", fontSize: 10 }}>(Auto)</span>
+              </label>
+              <input
+                type="date"
+                value={getAutoEndDate(issueDate)}
+                readOnly
+                style={{
+                  width: "100%",
+                  background: "#f0fdf4",
+                  border: "1.5px solid #bbf7d0",
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontSize: 13,
+                  color: "#16a34a",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  cursor: "not-allowed",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Book Name (readonly) */}
+          <div>
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#64748b",
+                letterSpacing: "1px",
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              BOOK NAME
+            </label>
+            <div
+              style={{
+                background: "#eff6ff",
+                border: "1.5px solid #bfdbfe",
+                borderRadius: 12,
+                padding: "12px 16px",
+                fontSize: 14,
+                color: "#3b82f6",
+                fontWeight: 600,
+              }}
+            >
+              {book.name}
+            </div>
+          </div>
+
+          {/* Confirm Button */}
+          <button
+            onClick={handleConfirm}
+            disabled={submitted}
+            style={{
+              background: submitted
+                ? "#10b981"
+                : "linear-gradient(135deg, #4f7ef7, #6366f1)",
+              border: "none",
+              borderRadius: 12,
+              padding: "14px",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: submitted ? "default" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: submitted
+                ? "0 4px 14px rgba(16,185,129,0.3)"
+                : "0 4px 14px rgba(99,102,241,0.35)",
+              transition: "all 0.3s",
+              marginTop: 4,
+            }}
+          >
+            {submitted ? (
+              <>
+                <span>✅</span> Book Issued Successfully!
+              </>
+            ) : (
+              <>
+                <span>✅</span> Confirm Issue
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Book Card ──────────────────────────────────────────────────────
-function BookCard({ book, showDays, onClick }) {
+// ─── PDF Viewer Modal ───────────────────────────────────────────────
+function PDFViewer({ book, onClose }) {
+  const [isFull, setIsFull] = useState(false);
+  const [showIssueModal, setShowIssueModal] = useState(false);
+
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(15,23,42,0.75)",
+          backdropFilter: "blur(6px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          animation: "fadeIn 0.2s ease",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#fff",
+            borderRadius: isFull ? 0 : 20,
+            width: isFull ? "100vw" : "min(92vw, 1000px)",
+            height: isFull ? "100vh" : "min(90vh, 780px)",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
+            animation: "slideUp 0.25s ease",
+            transition:
+              "width 0.3s ease, height 0.3s ease, border-radius 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 20px",
+              borderBottom: "1.5px solid #f1f5f9",
+              background: "#fff",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: book.bg,
+                  border: `1.5px solid ${book.color}33`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 18,
+                }}
+              >
+                📚
+              </div>
+              <div>
+                <div
+                  style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}
+                >
+                  {book.name}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: book.color,
+                    fontWeight: 600,
+                    background: book.bg,
+                    display: "inline-block",
+                    padding: "2px 8px",
+                    borderRadius: 20,
+                    border: `1px solid ${book.color}33`,
+                  }}
+                >
+                  {book.category}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {/* Issue Book Button */}
+              <button
+                onClick={() => setShowIssueModal(true)}
+                style={{
+                  height: 36,
+                  borderRadius: 10,
+                  background: "linear-gradient(135deg, #4f7ef7, #6366f1)",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  padding: "0 14px",
+                  boxShadow: "0 2px 8px rgba(99,102,241,0.3)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                📋 Issue Book
+              </button>
+              <button
+                title={isFull ? "Exit Fullscreen" : "Fullscreen"}
+                onClick={() => setIsFull((f) => !f)}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: "#f8fafc",
+                  border: "1.5px solid #e2e8f0",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#64748b",
+                  cursor: "pointer",
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{ width: 16, height: 16 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d={
+                      isFull
+                        ? "M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"
+                        : "M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+                    }
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: "#fef2f2",
+                  border: "1.5px solid #fecaca",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  style={{ width: 15, height: 15 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div style={{ flex: 1, background: "#f1f5f9", position: "relative" }}>
+            <iframe
+              src={book.pdf}
+              title={book.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                display: "block",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              padding: "10px 20px",
+              background: "#f8fafc",
+              borderTop: "1.5px solid #f1f5f9",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ fontSize: 12, color: "#94a3b8" }}>
+              📄 PDF Viewer — Click outside or press ✕ to close
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: book.color,
+                background: book.bg,
+                padding: "3px 10px",
+                borderRadius: 20,
+                border: `1px solid ${book.color}33`,
+              }}
+            >
+              {book.name}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showIssueModal && (
+        <IssueBookModal
+          book={book}
+          onClose={() => setShowIssueModal(false)}
+          onConfirm={(data) => console.log("Issued:", data)}
+        />
+      )}
+    </>
+  );
+}
+
+// ─── Book Card (All Books) ──────────────────────────────────────────
+function BookCard({ book, onClick }) {
   return (
     <div
       onClick={onClick}
@@ -555,7 +815,6 @@ function BookCard({ book, showDays, onClick }) {
           borderRadius: "16px 16px 0 0",
         }}
       />
-
       <div
         style={{
           width: 48,
@@ -571,7 +830,6 @@ function BookCard({ book, showDays, onClick }) {
       >
         📚
       </div>
-
       <div>
         <div
           style={{
@@ -599,37 +857,6 @@ function BookCard({ book, showDays, onClick }) {
           {book.category}
         </div>
       </div>
-
-      {showDays && book.days && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            color: book.days <= 3 ? "#ef4444" : "#f59e0b",
-            fontSize: 12,
-            fontWeight: 700,
-            background: book.days <= 3 ? "#fef2f2" : "#fffbeb",
-            padding: "4px 10px",
-            borderRadius: 8,
-            width: "fit-content",
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ width: 13, height: 13 }}
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path strokeLinecap="round" d="M12 6v6l4 2" />
-          </svg>
-          {book.days} day{book.days > 1 ? "s" : ""} left
-        </div>
-      )}
-
-      {/* Open hint */}
       <div
         style={{
           display: "flex",
@@ -659,17 +886,699 @@ function BookCard({ book, showDays, onClick }) {
   );
 }
 
+// ─── Issued Books Table ─────────────────────────────────────────────
+function IssuedBooksTable({ books }) {
+  const headers = [
+    "#",
+    "Book Name",
+    "Student Name",
+    "Department",
+    "Issue Date",
+    "End Date",
+    "Status",
+  ];
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1.5px solid #e2e8f0",
+        borderRadius: 16,
+        overflow: "hidden",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+      }}
+    >
+      <table
+        style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}
+      >
+        <thead>
+          <tr
+            style={{
+              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+            }}
+          >
+            {headers.map((h) => (
+              <th
+                key={h}
+                style={{
+                  padding: "14px 18px",
+                  textAlign: "left",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 12,
+                  letterSpacing: "0.5px",
+                  whiteSpace: "nowrap",
+                  borderRight: "1px solid rgba(255,255,255,0.15)",
+                }}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {books.map((book, idx) => {
+            const isExpiring = book.days <= 7;
+            const isCritical = book.days <= 3;
+            const statusColor = isCritical
+              ? "#ef4444"
+              : isExpiring
+                ? "#f59e0b"
+                : "#10b981";
+            const statusBg = isCritical
+              ? "#fef2f2"
+              : isExpiring
+                ? "#fffbeb"
+                : "#f0fdf4";
+            const statusBorder = isCritical
+              ? "#fecaca"
+              : isExpiring
+                ? "#fde68a"
+                : "#bbf7d0";
+            const statusText = isCritical
+              ? "Critical"
+              : isExpiring
+                ? "Expiring"
+                : "Active";
+
+            return (
+              <tr
+                key={book.id}
+                style={{
+                  background: idx % 2 === 0 ? "#fff" : "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
+                  transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#eef2ff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background =
+                    idx % 2 === 0 ? "#fff" : "#f8fafc";
+                }}
+              >
+                {/* # */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                    color: "#94a3b8",
+                    fontWeight: 700,
+                    fontSize: 13,
+                  }}
+                >
+                  {String(idx + 1).padStart(2, "0")}
+                </td>
+
+                {/* Book Name */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 8,
+                        background: book.bg,
+                        fontSize: 16,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: `1px solid ${book.color}33`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      📚
+                    </div>
+                    <div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: "#0f172a",
+                          fontSize: 14,
+                        }}
+                      >
+                        {book.name}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          color: book.color,
+                          background: book.bg,
+                          padding: "1px 7px",
+                          borderRadius: 20,
+                          fontWeight: 600,
+                          border: `1px solid ${book.color}33`,
+                        }}
+                      >
+                        {book.category}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                {/* Student Name */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <div
+                      style={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {book.student
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
+                    <span style={{ fontWeight: 600, color: "#1e293b" }}>
+                      {book.student}
+                    </span>
+                  </div>
+                </td>
+
+                {/* Department */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                    color: "#475569",
+                    fontWeight: 500,
+                  }}
+                >
+                  {book.department}
+                </td>
+
+                {/* Issue Date */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                    color: "#475569",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {new Date(book.issueDate).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </td>
+
+                {/* End Date */}
+                <td
+                  style={{
+                    padding: "14px 18px",
+                    borderRight: "1px solid #e2e8f0",
+                    color: "#475569",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {new Date(book.endDate).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </td>
+
+                {/* Status */}
+                <td style={{ padding: "14px 18px" }}>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: statusBg,
+                      padding: "5px 12px",
+                      borderRadius: 20,
+                      border: `1px solid ${statusBorder}`,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        background: statusColor,
+                        display: "inline-block",
+                      }}
+                    />
+                    {statusText} · {book.days}d left
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {books.length === 0 && (
+        <div
+          style={{
+            padding: "48px",
+            textAlign: "center",
+            color: "#94a3b8",
+            fontSize: 14,
+          }}
+        >
+          No issued books found.
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Upload Form ────────────────────────────────────────────────────
+function UploadForm() {
+  const [course, setCourse] = useState("");
+  const [subject, setSubject] = useState("");
+  const [bookName, setBookName] = useState("");
+  const [file, setFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const fileInputRef = useState(null);
+
+  const handleFile = (f) => {
+    if (f && f.type === "application/pdf") setFile(f);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    handleFile(e.dataTransfer.files[0]);
+  };
+
+  const handleUpload = () => {
+    if (!course || !subject || !bookName || !file) return;
+    setUploading(true);
+    setTimeout(() => {
+      setUploading(false);
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setCourse("");
+        setSubject("");
+        setBookName("");
+        setFile(null);
+      }, 2000);
+    }, 1800);
+  };
+
+  const inputStyle = {
+    width: "100%",
+    background: "#f8fafc",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 12,
+    padding: "11px 16px",
+    color: "#1e293b",
+    fontSize: 14,
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+  };
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1.5px solid #e0e7ff",
+        borderRadius: 20,
+        padding: "28px 32px",
+        marginBottom: 36,
+        boxShadow: "0 2px 12px rgba(99,102,241,0.07)",
+      }}
+    >
+      {/* Title */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            background: "#eef2ff",
+            borderRadius: 8,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#6366f1"
+            strokeWidth="2"
+            style={{ width: 16, height: 16 }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+            />
+          </svg>
+        </div>
+        <span style={{ color: "#6366f1", fontWeight: 700, fontSize: 15 }}>
+          Upload New Resource
+        </span>
+      </div>
+
+      {/* Row 1: Course, Subject, Book Name */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 14,
+          marginBottom: 16,
+        }}
+      >
+        {[
+          {
+            label: "COURSE",
+            value: course,
+            setter: setCourse,
+            placeholder: "e.g. B.Tech, BCA",
+          },
+          {
+            label: "SUBJECT",
+            value: subject,
+            setter: setSubject,
+            placeholder: "e.g. Mathematics",
+          },
+          {
+            label: "BOOK NAME",
+            value: bookName,
+            setter: setBookName,
+            placeholder: "e.g. Calculus Vol. 1",
+          },
+        ].map(({ label, value, setter, placeholder }) => (
+          <div key={label}>
+            <label
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#64748b",
+                letterSpacing: "1px",
+                display: "block",
+                marginBottom: 7,
+              }}
+            >
+              {label}
+            </label>
+            <input
+              value={value}
+              onChange={(e) => setter(e.target.value)}
+              placeholder={placeholder}
+              style={inputStyle}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#6366f1";
+                e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#e2e8f0";
+                e.target.style.boxShadow = "none";
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Row 2: File Upload + Button */}
+      <div
+        style={{
+          display: "flex",
+          gap: 14,
+          alignItems: "flex-end",
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Choose File / Drop Zone */}
+        <div style={{ flex: "1 1 280px" }}>
+          <label
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#64748b",
+              letterSpacing: "1px",
+              display: "block",
+              marginBottom: 7,
+            }}
+          >
+            CHOOSE PDF FILE
+          </label>
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById("pdf-file-input").click()}
+            style={{
+              border: `2px dashed ${dragging ? "#6366f1" : file ? "#10b981" : "#c7d2fe"}`,
+              borderRadius: 12,
+              background: dragging ? "#eef2ff" : file ? "#f0fdf4" : "#f8faff",
+              padding: "16px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: file ? "#dcfce7" : "#eef2ff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {file ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="2"
+                  style={{ width: 18, height: 18 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#6366f1"
+                  strokeWidth="2"
+                  style={{ width: 18, height: 18 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                  />
+                </svg>
+              )}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {file ? (
+                <>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 13,
+                      color: "#10b981",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {file.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6ee7b7" }}>
+                    {(file.size / 1024).toFixed(1)} KB · PDF
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div
+                    style={{ fontWeight: 600, fontSize: 13, color: "#6366f1" }}
+                  >
+                    Click to choose or drag & drop
+                  </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                    Only PDF files accepted
+                  </div>
+                </>
+              )}
+            </div>
+            {file && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFile(null);
+                }}
+                style={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: 6,
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <input
+            id="pdf-file-input"
+            type="file"
+            accept="application/pdf"
+            style={{ display: "none" }}
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+        </div>
+
+        {/* Upload Button */}
+        <div style={{ flexShrink: 0 }}>
+          <button
+            onClick={handleUpload}
+            disabled={uploading || success}
+            style={{
+              background: success
+                ? "linear-gradient(135deg, #10b981, #059669)"
+                : uploading
+                  ? "#c7d2fe"
+                  : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              border: "none",
+              borderRadius: 12,
+              padding: "13px 32px",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: uploading || success ? "default" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              whiteSpace: "nowrap",
+              boxShadow: uploading
+                ? "none"
+                : success
+                  ? "0 4px 14px rgba(16,185,129,0.35)"
+                  : "0 4px 14px rgba(99,102,241,0.3)",
+              transition: "all 0.3s",
+              height: 46,
+            }}
+          >
+            {success ? (
+              <>
+                <span>✅</span> Uploaded!
+              </>
+            ) : uploading ? (
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{
+                    width: 16,
+                    height: 16,
+                    animation: "spin 1s linear infinite",
+                  }}
+                >
+                  <path
+                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                Uploading...
+              </>
+            ) : (
+              <>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{ width: 16, height: 16 }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                  />
+                </svg>
+                Upload PDF
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ──────────────────────────────────────────────────────
 export default function LibraryPage() {
   const [active, setActive] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [openBook, setOpenBook] = useState(null);
+  const [search, setSearch] = useState("");
 
-  const getBooks = () => {
-    if (active === "all") return allBooks;
-    if (active === "my") return myBooks;
-    if (active === "expire") return expireBooks;
-    return [];
+  const getFilteredBooks = () => {
+    const books = active === "all" ? allBooks : issuedBooks;
+    if (!search) return books;
+    return books.filter(
+      (b) =>
+        b.name.toLowerCase().includes(search.toLowerCase()) ||
+        b.category.toLowerCase().includes(search.toLowerCase()),
+    );
   };
 
   const activeConfig = cardConfigs.find((c) => c.key === active);
@@ -735,7 +1644,7 @@ export default function LibraryPage() {
             </h1>
           </div>
           <p style={{ margin: 0, color: "#94a3b8", fontSize: 14 }}>
-            Manage, browse and upload your educational resources
+            Manage, browse and track issued educational resources
           </p>
         </div>
         <div
@@ -760,143 +1669,9 @@ export default function LibraryPage() {
       </div>
 
       {/* Upload Section */}
-      <div
-        style={{
-          background: "#fff",
-          border: "1.5px solid #e0e7ff",
-          borderRadius: 20,
-          padding: "28px 32px",
-          marginBottom: 36,
-          boxShadow: "0 2px 12px rgba(99,102,241,0.07)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 20,
-          }}
-        >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              background: "#eef2ff",
-              borderRadius: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#6366f1"
-              strokeWidth="2"
-              style={{ width: 16, height: 16 }}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-              />
-            </svg>
-          </div>
-          <span style={{ color: "#6366f1", fontWeight: 700, fontSize: 14 }}>
-            Upload New Resource
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {["Course", "Subject", "Book Name"].map((placeholder) => (
-            <input
-              key={placeholder}
-              placeholder={placeholder}
-              style={{
-                flex: "1 1 180px",
-                background: "#f8fafc",
-                border: "1.5px solid #e2e8f0",
-                borderRadius: 12,
-                padding: "11px 16px",
-                color: "#1e293b",
-                fontSize: 14,
-                outline: "none",
-                transition: "border-color 0.2s, box-shadow 0.2s",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#6366f1";
-                e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e2e8f0";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          ))}
-          <button
-            onClick={handleUpload}
-            style={{
-              background: uploading
-                ? "#c7d2fe"
-                : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-              border: "none",
-              borderRadius: 12,
-              padding: "11px 28px",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              whiteSpace: "nowrap",
-              boxShadow: uploading ? "none" : "0 4px 14px rgba(99,102,241,0.3)",
-              transition: "all 0.2s",
-            }}
-          >
-            {uploading ? (
-              <>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{
-                    width: 16,
-                    height: 16,
-                    animation: "spin 1s linear infinite",
-                  }}
-                >
-                  <path
-                    d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Uploading...
-              </>
-            ) : (
-              <>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ width: 16, height: 16 }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-                  />
-                </svg>
-                Upload PDF
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      <UploadForm />
 
-      {/* Category Cards */}
+      {/* Two Category Cards */}
       {!active && (
         <>
           <div
@@ -913,14 +1688,17 @@ export default function LibraryPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
               gap: 20,
             }}
           >
             {cardConfigs.map((cfg) => (
               <div
                 key={cfg.key}
-                onClick={() => setActive(cfg.key)}
+                onClick={() => {
+                  setActive(cfg.key);
+                  setSearch("");
+                }}
                 style={{
                   background: "#fff",
                   border: `1.5px solid ${cfg.border}`,
@@ -1019,7 +1797,7 @@ export default function LibraryPage() {
         </>
       )}
 
-      {/* Books Grid */}
+      {/* Books / Issued List */}
       {active && (
         <div>
           <div
@@ -1031,7 +1809,10 @@ export default function LibraryPage() {
             }}
           >
             <button
-              onClick={() => setActive(null)}
+              onClick={() => {
+                setActive(null);
+                setSearch("");
+              }}
               style={{
                 background: "#fff",
                 border: "1.5px solid #e2e8f0",
@@ -1044,7 +1825,6 @@ export default function LibraryPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                transition: "all 0.2s",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
               }}
               onMouseEnter={(e) => {
@@ -1063,7 +1843,8 @@ export default function LibraryPage() {
                 {activeConfig?.label}
               </div>
               <div style={{ color: "#94a3b8", fontSize: 13 }}>
-                {getBooks().length} books found
+                {getFilteredBooks().length}{" "}
+                {active === "issued" ? "records" : "books"} found
               </div>
             </div>
           </div>
@@ -1090,6 +1871,8 @@ export default function LibraryPage() {
               <path strokeLinecap="round" d="m21 21-4.35-4.35" />
             </svg>
             <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search books..."
               style={{
                 width: "100%",
@@ -1114,26 +1897,89 @@ export default function LibraryPage() {
             />
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {getBooks().map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                showDays={active === "expire"}
-                onClick={() => setOpenBook(book)}
-              />
-            ))}
-          </div>
+          {/* All Books Grid */}
+          {active === "all" && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                gap: 16,
+              }}
+            >
+              {getFilteredBooks().map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onClick={() => setOpenBook(book)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Issued Details Table */}
+          {active === "issued" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Summary stats */}
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {[
+                  {
+                    label: "Total Issued",
+                    value: issuedBooks.length,
+                    color: "#6366f1",
+                    bg: "#eef2ff",
+                  },
+                  {
+                    label: "Expiring ≤7d",
+                    value: issuedBooks.filter((b) => b.days <= 7).length,
+                    color: "#f59e0b",
+                    bg: "#fffbeb",
+                  },
+                  {
+                    label: "Critical ≤3d",
+                    value: issuedBooks.filter((b) => b.days <= 3).length,
+                    color: "#ef4444",
+                    bg: "#fef2f2",
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    style={{
+                      background: stat.bg,
+                      border: `1px solid ${stat.color}33`,
+                      borderRadius: 12,
+                      padding: "10px 18px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: stat.color,
+                      }}
+                    >
+                      {stat.value}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: stat.color,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {stat.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <IssuedBooksTable books={getFilteredBooks()} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* PDF Viewer Modal */}
       {openBook && (
         <PDFViewer book={openBook} onClose={() => setOpenBook(null)} />
       )}
