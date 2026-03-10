@@ -29,6 +29,7 @@ import Assignment from "@/Components/Folder/Folder";
 import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
 import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement";
 import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
+import PraticeTest from "@/Components/PraticeTest/PraticeTest";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -54,6 +55,7 @@ export default function Sidebar() {
     { id: "fees", name: "Fees Record", icon: Clock },
     { id: "event", name: "Event", icon: FileText },
     { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
+    { id: "praticeTest", name: "Pratice Test", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "course", name: "Courses", icon: FileText },
@@ -96,6 +98,8 @@ export default function Sidebar() {
         return <Certificate />;
       case "schedule":
         return <Schedule />;
+      case "praticeTest":
+        return <PraticeTest />;
       case "result":
         return <Result />;
       case "record":
