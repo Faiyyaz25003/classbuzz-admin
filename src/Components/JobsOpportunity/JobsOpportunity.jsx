@@ -274,9 +274,6 @@ export default function JobPage() {
             </div>
 
             <div className="flex gap-3 mt-4">
-              <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-                Apply
-              </button>
 
               <button
                 onClick={() => deleteJob(job._id)}
