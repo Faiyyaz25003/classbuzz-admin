@@ -28,6 +28,7 @@ import RecordedLectures from "@/Components/RecordedLecture/RecordedLecture";
 import Assignment from "@/Components/Folder/Folder";
 import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
 import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement";
+import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -52,6 +53,7 @@ export default function Sidebar() {
     { id: "leave", name: "Leave Management", icon: Clock },
     { id: "fees", name: "Fees Record", icon: Clock },
     { id: "event", name: "Event", icon: FileText },
+    { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "course", name: "Courses", icon: FileText },
@@ -60,7 +62,11 @@ export default function Sidebar() {
     { id: "certificate", name: "Certificate", icon: FileText },
     { id: "upcomingExams", name: "UpcomingExams", icon: FileText },
     { id: "assignment", name: "Assignment", icon: LayoutDashboard },
-    { id: "libraryManagement", name: "Library Management", icon: LayoutDashboard },
+    {
+      id: "libraryManagement",
+      name: "Library Management",
+      icon: LayoutDashboard,
+    },
   ];
 
   const handleLinkClick = (id) => {
@@ -80,6 +86,8 @@ export default function Sidebar() {
         return <UserList />;
       case "fees":
         return <Fees />;
+      case "jobsOpportunity":
+        return <JobsOpportunity />;
       case "course":
         return <Course />;
       case "documents":
