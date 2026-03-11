@@ -31,6 +31,7 @@ import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement"
 import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
 import PraticeTest from "@/Components/PraticeTest/PraticeTest";
 import Announcement from "@/Components/Announcement/Announcement";
+import Notes from "@/Components/Notes/Notes";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -61,6 +62,7 @@ export default function Sidebar() {
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "course", name: "Courses", icon: FileText },
+    { id: "notes", name: "Notes", icon: FileText },
     { id: "documents", name: "Documents", icon: FileText },
     { id: "result", name: "Result", icon: FileText },
     { id: "certificate", name: "Certificate", icon: FileText },
@@ -102,6 +104,8 @@ export default function Sidebar() {
         return <Schedule />;
       case "praticeTest":
         return <PraticeTest />;
+      case "notes":
+        return <Notes />;
       case "result":
         return <Result />;
       case "announcement":
