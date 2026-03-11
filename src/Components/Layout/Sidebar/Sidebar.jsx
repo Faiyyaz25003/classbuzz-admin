@@ -30,6 +30,7 @@ import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
 import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement";
 import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
 import PraticeTest from "@/Components/PraticeTest/PraticeTest";
+import Announcement from "@/Components/Announcement/Announcement";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -56,6 +57,7 @@ export default function Sidebar() {
     { id: "event", name: "Event", icon: FileText },
     { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
     { id: "praticeTest", name: "Pratice Test", icon: FileText },
+    { id: "announcement", name: "Announcement", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
     { id: "course", name: "Courses", icon: FileText },
@@ -102,6 +104,8 @@ export default function Sidebar() {
         return <PraticeTest />;
       case "result":
         return <Result />;
+      case "announcement":
+        return <Announcement />;
       case "record":
         return <RecordedLectures />;
       case "upcomingExams":
