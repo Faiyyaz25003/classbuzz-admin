@@ -29,7 +29,6 @@ import Assignment from "@/Components/Folder/Folder";
 import UpcomingExams from "@/Components/UpcomingExams/UpcomingExams";
 import LibraryManagement from "@/Components/LibraryManagement/LibraryManagement";
 import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
-import PraticeTest from "@/Components/PraticeTest/PraticeTest";
 import Announcement from "@/Components/Announcement/Announcement";
 import Notes from "@/Components/Notes/Notes";
 import CodeBasedAttendence from "@/Components/CodeBasedAttendence/CodeBasedAttendence";
@@ -59,7 +58,6 @@ export default function Sidebar() {
     { id: "fees", name: "Fees Record", icon: Clock },
     { id: "event", name: "Event", icon: FileText },
     { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
-    { id: "praticeTest", name: "Pratice Test", icon: FileText },
     { id: "announcement", name: "Announcement", icon: FileText },
     { id: "schedule", name: "Schedule", icon: LayoutDashboard },
     { id: "record", name: "Recorded Lecture", icon: FileText },
@@ -106,8 +104,6 @@ export default function Sidebar() {
         return <Certificate />;
       case "schedule":
         return <Schedule />;
-      case "praticeTest":
-        return <PraticeTest />;
       case "notes":
         return <Notes />;
       case "result":
