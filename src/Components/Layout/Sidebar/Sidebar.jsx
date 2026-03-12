@@ -32,6 +32,7 @@ import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
 import PraticeTest from "@/Components/PraticeTest/PraticeTest";
 import Announcement from "@/Components/Announcement/Announcement";
 import Notes from "@/Components/Notes/Notes";
+import CodeBasedAttendence from "@/Components/CodeBasedAttendence/CodeBasedAttendence";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -52,6 +53,7 @@ export default function Sidebar() {
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
+    { id: "codeBasedAttendence", name: "Code Based Attendence", icon: CalendarCheck },
     { id: "user", name: "User", icon: UserPlus },
     { id: "leave", name: "Leave Management", icon: Clock },
     { id: "fees", name: "Fees Record", icon: Clock },
@@ -86,6 +88,8 @@ export default function Sidebar() {
         return <Dashboard />;
       case "attendance":
         return <Attendance />;
+      case "codeBasedAttendence":
+        return <CodeBasedAttendence />;
       case "leave":
         return <Leave />;
       case "user":
