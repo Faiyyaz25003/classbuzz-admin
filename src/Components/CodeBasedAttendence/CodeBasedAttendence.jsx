@@ -4,11 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 const API = "http://localhost:5000/api";
-const CODE_VALIDITY_SECONDS = 5 * 60;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Countdown Timer Hook
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Countdown Timer
+// ─────────────────────────────────────────────────────────
 function useCountdown(expiresAt) {
   const [secondsLeft, setSecondsLeft] = useState(0);
 
@@ -17,6 +16,7 @@ function useCountdown(expiresAt) {
       setSecondsLeft(0);
       return;
     }
+
     const tick = () => {
       const diff = Math.max(
         0,
@@ -24,6 +24,7 @@ function useCountdown(expiresAt) {
       );
       setSecondsLeft(diff);
     };
+
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
@@ -31,32 +32,51 @@ function useCountdown(expiresAt) {
 
   const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const seconds = String(secondsLeft % 60).padStart(2, "0");
+
   return { secondsLeft, display: `${minutes}:${seconds}` };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TeacherSubjectPage — Code generate + today's attendance sheet
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Teacher Subject Page
+// ─────────────────────────────────────────────────────────
 function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
   const [codeData, setCodeData] = useState(null);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState(null);
   const [attendance, setAttendance] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loadingAtt, setLoadingAtt] = useState(false);
-  const [fetchError, setFetchError] = useState(null);
+  const [loadingStudents, setLoadingStudents] = useState(true);
 
-  const { secondsLeft, display: timerDisplay } = useCountdown(
-    codeData?.expiresAt,
-  );
-  const isExpired = codeData && secondsLeft === 0;
+  const { display } = useCountdown(codeData?.expiresAt);
 
-  // ✅ FIX: subjectId = subject.name (consistent with how records are stored)
   const subjectId = subject.name;
 
-  // ── Today's attendance sheet ─────────────────────────────────────────────────
+  // ─────────────────────────────────────────
+  // Fetch Students — filtered by department + semester via backend query params
+  // Backend should handle: GET /api/users?courseId=xxx&semester=1
+  // ─────────────────────────────────────────
+  const fetchStudents = useCallback(async () => {
+    setLoadingStudents(true);
+    try {
+      const res = await axios.get(`${API}/users`, {
+        params: {
+          courseId, // filter by course/department on the backend
+          semester, // filter by semester on the backend
+        },
+      });
+      setStudents(res.data || []);
+    } catch (err) {
+      console.error("fetchStudents error:", err.message);
+    } finally {
+      setLoadingStudents(false);
+    }
+  }, [courseId, semester]);
+
+  // ─────────────────────────────────────────
+  // Fetch Attendance for today
+  // ─────────────────────────────────────────
   const fetchAttendance = useCallback(async () => {
     setLoadingAtt(true);
-    setFetchError(null);
     try {
       const today = new Date().toISOString().split("T")[0];
       const res = await axios.get(`${API}/attendance-record/teacher`, {
@@ -64,34 +84,29 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
       });
       setAttendance(res.data?.data || []);
     } catch (err) {
-      // ✅ FIX: 404 = koi record nahi, error nahi
-      if (err.response?.status === 404) {
-        setAttendance([]);
-      } else {
-        console.error("Teacher fetchAttendance:", err.message);
-        setFetchError("Attendance records load nahi ho sake.");
-      }
+      if (err.response?.status === 404) setAttendance([]);
     } finally {
       setLoadingAtt(false);
     }
   }, [subjectId]);
 
+  // Load once on mount
   useEffect(() => {
+    fetchStudents();
     fetchAttendance();
+  }, [fetchStudents, fetchAttendance]);
+
+  // Auto-refresh attendance every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchAttendance, 5000);
+    return () => clearInterval(interval);
   }, [fetchAttendance]);
 
-  // ── Auto refresh when code is active ────────────────────────────────────────
-  // ✅ FIX: Jab code active ho toh har 15 seconds mein attendance refresh karo
-  useEffect(() => {
-    if (!codeData || isExpired) return;
-    const id = setInterval(fetchAttendance, 15000);
-    return () => clearInterval(id);
-  }, [codeData, isExpired, fetchAttendance]);
-
-  // ── Generate code ────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────
+  // Generate Attendance Code
+  // ─────────────────────────────────────────
   const handleGenerateCode = async () => {
     setGenerating(true);
-    setError(null);
     try {
       const res = await axios.post(`${API}/attendance-code/generate`, {
         subjectId,
@@ -100,36 +115,30 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
         semester,
       });
       setCodeData(res.data.data);
-      fetchAttendance(); // Fresh sheet dikhao
+      fetchAttendance();
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Code generate karne mein error aaya.",
-      );
+      console.error("generateCode error:", err);
     } finally {
       setGenerating(false);
     }
   };
 
-  // ── Deactivate code ──────────────────────────────────────────────────────────
-  const handleDeactivate = async () => {
-    if (!codeData?._id) return;
-    try {
-      await axios.patch(`${API}/attendance-code/deactivate/${codeData._id}`);
-      setCodeData(null);
-      fetchAttendance();
-    } catch (err) {
-      console.error("Deactivate error:", err.message);
-    }
-  };
+  // ─────────────────────────────────────────
+  // Merge students + attendance records
+  // ─────────────────────────────────────────
+  const mergedList = students.map((stu) => {
+    const record = attendance.find((a) => String(a.userId) === String(stu._id));
+    return {
+      _id: stu._id,
+      userName: stu.name || stu.userName || stu.fullName || "Unknown",
+      status: record ? record.status : "Absent",
+      codeUsed: record?.codeUsed || "",
+      markedAt: record?.markedAt || null,
+    };
+  });
 
-  const progressPct = codeData
-    ? Math.round((secondsLeft / CODE_VALIDITY_SECONDS) * 100)
-    : 0;
-  const progressColor =
-    progressPct > 50 ? "#2ecc71" : progressPct > 20 ? "#f39c12" : "#e74c3c";
-
-  const presentCount = attendance.filter((r) => r.status === "Present").length;
-  const absentCount = attendance.filter((r) => r.status === "Absent").length;
+  const presentCount = mergedList.filter((r) => r.status === "Present").length;
+  const absentCount = mergedList.filter((r) => r.status === "Absent").length;
 
   return (
     <div className="p-10 bg-gray-50 min-h-screen">
@@ -137,146 +146,71 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
       <div className="flex justify-between items-center mb-10">
         <div>
           <h1 className="text-3xl font-bold">{subject.name}</h1>
-          <p className="text-gray-500 text-sm mt-1">Teacher Attendance Panel</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {loadingStudents
+              ? "Loading students..."
+              : `${students.length} students enrolled`}
+          </p>
         </div>
         <button
           onClick={handleGenerateCode}
           disabled={generating}
-          className="border-2 border-black px-6 py-2 font-semibold hover:bg-black hover:text-white transition disabled:opacity-50"
+          className="border-2 border-black px-6 py-2 font-semibold hover:bg-black hover:text-white disabled:opacity-40 transition-all"
         >
-          {generating
-            ? "Generating…"
-            : codeData && !isExpired
-              ? "🔄 Regenerate Code"
-              : "🔑 Generate Code"}
+          {generating ? "Generating..." : "Generate Code"}
         </button>
       </div>
 
-      {error && (
-        <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Code Card */}
+      {/* Code Display */}
       {codeData && (
-        <div
-          className={`border-4 rounded-2xl p-8 mb-8 transition-all ${
-            isExpired ? "border-red-400 bg-red-50" : "border-black bg-white"
-          }`}
-        >
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            {/* Code display */}
-            <div>
-              <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-2">
-                {subject.name} — Attendance Code
-              </p>
-              <div
-                className={`text-6xl font-black tracking-[12px] font-mono ${
-                  isExpired ? "text-red-400 line-through" : "text-black"
-                }`}
-              >
-                {codeData.code}
-              </div>
-              {isExpired && (
-                <p className="text-red-500 text-sm font-semibold mt-2">
-                  ⚠️ Code expired! Naya code generate karein.
-                </p>
-              )}
-            </div>
-
-            {/* Countdown timer */}
-            {!isExpired && (
-              <div className="flex flex-col items-center">
-                <div className="text-4xl font-bold font-mono text-gray-800">
-                  {timerDisplay}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">Time remaining</p>
-                <div className="w-40 h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-1000"
-                    style={{
-                      width: `${progressPct}%`,
-                      background: progressColor,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+        <div className="border-4 border-black p-8 rounded-xl mb-10 bg-white text-center">
+          <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">
+            Attendance Code
+          </p>
+          <div className="text-6xl font-black tracking-[12px] font-mono">
+            {codeData.code}
           </div>
-
-          {!isExpired && (
-            <div className="mt-4 flex items-center gap-6">
-              <button
-                onClick={handleDeactivate}
-                className="text-sm text-gray-500 hover:text-red-600 underline transition"
-              >
-                End Attendance Early
-              </button>
-              <p className="text-xs text-gray-400">
-                Valid till:{" "}
-                {new Date(codeData.expiresAt).toLocaleTimeString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
-          )}
+          <div className="mt-4 text-lg font-mono text-gray-600">
+            Expires in: <span className="font-bold text-black">{display}</span>
+          </div>
         </div>
       )}
 
-      {/* Today's Attendance Sheet */}
-      <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden">
-        <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">
-              Today's Attendance —{" "}
-              {new Date().toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </h2>
-            {/* ✅ NEW: Live count dikhao */}
-            {attendance.length > 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                <span className="text-green-600 font-semibold">
-                  {presentCount} Present
-                </span>
-                {" · "}
-                <span className="text-red-500 font-semibold">
-                  {absentCount} Absent
-                </span>
-                {" · "}
-                <span className="font-semibold">{attendance.length} Total</span>
-              </p>
-            )}
-          </div>
+      {/* Attendance Table */}
+      <div className="bg-white border rounded-xl overflow-hidden">
+        <div className="px-8 py-5 border-b flex justify-between items-center">
+          <h2 className="font-bold text-lg flex items-center gap-3">
+            Today's Attendance
+            <span className="text-sm font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full">
+              {presentCount} Present
+            </span>
+            <span className="text-sm font-medium bg-red-100 text-red-500 px-3 py-1 rounded-full">
+              {absentCount} Absent
+            </span>
+          </h2>
           <button
             onClick={fetchAttendance}
-            className="text-sm text-blue-500 hover:underline"
+            className="text-blue-500 hover:underline text-sm"
           >
-            🔃 Refresh
+            Refresh
           </button>
         </div>
 
-        {loadingAtt ? (
-          <p className="px-8 py-6 text-gray-400 animate-pulse">Loading…</p>
-        ) : fetchError ? (
-          <p className="px-8 py-6 text-red-500 text-sm">{fetchError}</p>
-        ) : attendance.length === 0 ? (
-          <p className="px-8 py-6 text-gray-400 text-sm">
-            Abhi tak koi student ne attendance nahi lagayi.
+        {loadingStudents ? (
+          <p className="p-8 text-gray-400">Loading students...</p>
+        ) : mergedList.length === 0 ? (
+          <p className="p-8 text-gray-400">
+            No students found for this course &amp; semester.
           </p>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50">
+              <tr className="bg-gray-50 border-b">
                 {["#", "Student Name", "Status", "Code Used", "Time"].map(
                   (h) => (
                     <th
                       key={h}
-                      className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500"
+                      className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-400"
                     >
                       {h}
                     </th>
@@ -285,27 +219,25 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
               </tr>
             </thead>
             <tbody>
-              {attendance.map((row, i) => (
+              {mergedList.map((row, i) => (
                 <tr
-                  key={row._id || i}
-                  className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                  key={row._id}
+                  className="border-t hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 text-sm text-gray-500">{i + 1}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                    {row.userName}
-                  </td>
+                  <td className="px-6 py-4 text-gray-400 text-sm">{i + 1}</td>
+                  <td className="px-6 py-4 font-semibold">{row.userName}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
                         row.status === "Present"
                           ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
+                          : "bg-red-100 text-red-500"
                       }`}
                     >
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-mono text-gray-600">
+                  <td className="px-6 py-4 font-mono text-sm text-gray-500">
                     {row.codeUsed || "—"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
@@ -325,7 +257,7 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
 
       <button
         onClick={onBack}
-        className="mt-8 text-gray-500 hover:text-gray-800 transition"
+        className="mt-8 text-gray-500 hover:text-gray-900 transition-colors"
       >
         ← Back
       </button>
@@ -333,137 +265,128 @@ function TeacherSubjectPage({ subject, courseId, semester, onBack }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main export — CodeBasedAttendence (Teacher view)
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// Main Page — Course → Semester → Subject drill-down
+// ─────────────────────────────────────────────────────────
 export default function CodeBasedAttendence() {
   const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedSemester, setSelectedSemester] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCourses = async () => {
       try {
         const res = await axios.get(`${API}/course`);
         setCourses(res.data || []);
       } catch (err) {
         console.error("fetchCourses:", err.message);
-        setError("Courses load nahi ho sake. Backend check karo.");
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchCourses();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="animate-pulse text-xl text-gray-600">Loading…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col justify-center items-center h-screen gap-4">
-        <p className="text-red-500 font-semibold text-lg">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
+  // ── Subject View ──────────────────────────────────────
   if (selectedSubject) {
     return (
       <TeacherSubjectPage
         subject={selectedSubject}
-        courseId={selectedCourse._id || selectedCourse.name}
+        courseId={selectedCourse._id}
         semester={selectedSemester.semester}
         onBack={() => setSelectedSubject(null)}
       />
     );
   }
 
+  // ── Subjects List ─────────────────────────────────────
   if (selectedSemester) {
     return (
       <div className="p-10 bg-gray-50 min-h-screen">
         <button
           onClick={() => setSelectedSemester(null)}
-          className="text-gray-500 mb-6 hover:text-gray-800 transition"
+          className="text-gray-500 hover:text-gray-900 mb-6 block transition-colors"
         >
-          ← Back to Semesters
+          ← Back
         </button>
-        <h1 className="text-4xl font-bold mb-10">Subjects</h1>
-        <div className="flex flex-col gap-6">
-          {selectedSemester.subjects.map((sub, i) => (
+        <h1 className="text-3xl font-bold mb-1">Subjects</h1>
+        <p className="text-gray-400 text-sm mb-8">
+          {selectedCourse.name} › Semester {selectedSemester.semester}
+        </p>
+
+        {!selectedSemester.subjects?.length ? (
+          <p className="text-gray-400">No subjects found.</p>
+        ) : (
+          selectedSemester.subjects.map((sub, i) => (
             <div
-              key={sub._id || i}
+              key={i}
               onClick={() => setSelectedSubject(sub)}
-              className="flex justify-between items-center p-6 bg-white border rounded-xl shadow hover:scale-105 transition cursor-pointer"
+              className="p-6 border rounded-xl mb-4 cursor-pointer hover:shadow-sm transition-all bg-white"
             >
-              <h2 className="text-2xl font-semibold">{sub.name}</h2>
-              <span className="text-xl">➜</span>
+              <span className="font-semibold">{sub.name}</span>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </div>
     );
   }
 
+  // ── Semesters List ────────────────────────────────────
   if (selectedCourse) {
     return (
       <div className="p-10 bg-gray-50 min-h-screen">
         <button
           onClick={() => setSelectedCourse(null)}
-          className="text-gray-500 mb-6 hover:text-gray-800 transition"
+          className="text-gray-500 hover:text-gray-900 mb-6 block transition-colors"
         >
-          ← Back to Courses
+          ← Back
         </button>
-        <h1 className="text-4xl font-bold mb-10">Semesters</h1>
-        <div className="flex flex-col gap-6">
-          {selectedCourse.semesters.map((sem, i) => (
-            <div
-              key={i}
-              onClick={() => setSelectedSemester(sem)}
-              className="flex justify-between items-center p-6 bg-white border rounded-xl shadow hover:scale-105 transition cursor-pointer"
-            >
-              <h2 className="text-2xl font-semibold">
-                Semester {sem.semester}
-              </h2>
-              <span className="text-xl">➜</span>
-            </div>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold mb-1">Semesters</h1>
+        <p className="text-gray-400 text-sm mb-8">{selectedCourse.name}</p>
+
+        {selectedCourse.semesters?.map((sem, i) => (
+          <div
+            key={i}
+            onClick={() => setSelectedSemester(sem)}
+            className="p-6 border rounded-xl mb-4 cursor-pointer hover:shadow-sm transition-all bg-white"
+          >
+            <span className="font-semibold">Semester {sem.semester}</span>
+            <span className="ml-3 text-sm text-gray-400">
+              {sem.subjects?.length || 0} subjects
+            </span>
+          </div>
+        ))}
       </div>
     );
   }
 
+  // ── Courses List ──────────────────────────────────────
   return (
     <div className="p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-12 text-gray-800">Courses</h1>
-      {courses.length === 0 ? (
-        <p className="text-gray-400">Koi course nahi mila.</p>
+      <h1 className="text-4xl font-bold mb-1">Courses</h1>
+      <p className="text-gray-400 text-sm mb-10">
+        Select a course to manage attendance
+      </p>
+
+      {loading ? (
+        <p className="text-gray-400">Loading courses...</p>
+      ) : courses.length === 0 ? (
+        <p className="text-gray-400">No courses found.</p>
       ) : (
-        <div className="flex flex-col gap-6">
-          {courses.map((course, i) => (
-            <div
-              key={course._id || i}
-              onClick={() => setSelectedCourse(course)}
-              className="flex justify-between items-center p-6 bg-white border rounded-xl shadow hover:scale-105 transition cursor-pointer"
-            >
-              <h2 className="text-2xl font-semibold">{course.name}</h2>
-              <span className="text-xl">➜</span>
-            </div>
-          ))}
-        </div>
+        courses.map((course) => (
+          <div
+            key={course._id}
+            onClick={() => setSelectedCourse(course)}
+            className="p-6 border rounded-xl mb-4 cursor-pointer hover:shadow-sm transition-all bg-white"
+          >
+            <span className="font-semibold">{course.name}</span>
+            <span className="ml-3 text-sm text-gray-400">
+              {course.semesters?.length || 0} semesters
+            </span>
+          </div>
+        ))
       )}
     </div>
   );

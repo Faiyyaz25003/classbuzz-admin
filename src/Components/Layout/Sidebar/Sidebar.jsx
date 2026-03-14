@@ -32,6 +32,7 @@ import JobsOpportunity from "@/Components/JobsOpportunity/JobsOpportunity";
 import Announcement from "@/Components/Announcement/Announcement";
 import Notes from "@/Components/Notes/Notes";
 import CodeBasedAttendence from "@/Components/CodeBasedAttendence/CodeBasedAttendence";
+import ZoomMeeting from "@/Components/ZoomMeeting/ZoomMeeting";
 export default function Sidebar() {
   const [currentView, setCurrentView] = useState("dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -53,6 +54,7 @@ export default function Sidebar() {
     { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
     { id: "attendance", name: "Attendance", icon: CalendarCheck },
     { id: "codeBasedAttendence", name: "Code Based Attendence", icon: CalendarCheck },
+    { id: "zoomMeeting", name: "Zoom Meeting", icon: LayoutDashboard },
     { id: "user", name: "User", icon: UserPlus },
     { id: "leave", name: "Leave Management", icon: Clock },
     { id: "fees", name: "Fees Record", icon: Clock },
@@ -110,6 +112,8 @@ export default function Sidebar() {
         return <Result />;
       case "announcement":
         return <Announcement />;
+      case "zoomMeeting":
+        return <ZoomMeeting />;
       case "record":
         return <RecordedLectures />;
       case "upcomingExams":
