@@ -50,33 +50,83 @@ export default function Sidebar() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const menuItems = [
-    { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
-    { id: "attendance", name: "Attendance", icon: CalendarCheck },
-    { id: "codeBasedAttendence", name: "Code Based Attendence", icon: CalendarCheck },
-    { id: "zoomMeeting", name: "Zoom Meeting", icon: LayoutDashboard },
-    { id: "user", name: "User", icon: UserPlus },
-    { id: "leave", name: "Leave Management", icon: Clock },
-    { id: "fees", name: "Fees Record", icon: Clock },
-    { id: "event", name: "Event", icon: FileText },
-    { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
-    { id: "announcement", name: "Announcement", icon: FileText },
-    { id: "schedule", name: "Schedule", icon: LayoutDashboard },
-    { id: "record", name: "Recorded Lecture", icon: FileText },
-    { id: "course", name: "Courses", icon: FileText },
-    { id: "notes", name: "Notes", icon: FileText },
-    { id: "documents", name: "Documents", icon: FileText },
-    { id: "result", name: "Result", icon: FileText },
-    { id: "certificate", name: "Certificate", icon: FileText },
-    { id: "upcomingExams", name: "UpcomingExams", icon: FileText },
-    { id: "assignment", name: "Assignment", icon: LayoutDashboard },
-    {
-      id: "libraryManagement",
-      name: "Library Management",
-      icon: LayoutDashboard,
-    },
-  ];
+  // const menuItems = [
+  //   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
+  //   { id: "attendance", name: "Attendance", icon: CalendarCheck },
+  //   { id: "codeBasedAttendence", name: "Code Based Attendence", icon: CalendarCheck },
+  //   { id: "zoomMeeting", name: "Zoom Meeting", icon: LayoutDashboard },
+  //   { id: "user", name: "User", icon: UserPlus },
+  //   { id: "leave", name: "Leave Management", icon: Clock },
+  //   { id: "fees", name: "Fees Record", icon: Clock },
+  //   { id: "event", name: "Event", icon: FileText },
+  //   { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
+  //   { id: "announcement", name: "Announcement", icon: FileText },
+  //   { id: "schedule", name: "Schedule", icon: LayoutDashboard },
+  //   { id: "record", name: "Recorded Lecture", icon: FileText },
+  //   { id: "course", name: "Courses", icon: FileText },
+  //   { id: "notes", name: "Notes", icon: FileText },
+  //   { id: "documents", name: "Documents", icon: FileText },
+  //   { id: "result", name: "Result", icon: FileText },
+  //   { id: "certificate", name: "Certificate", icon: FileText },
+  //   { id: "upcomingExams", name: "UpcomingExams", icon: FileText },
+  //   { id: "assignment", name: "Assignment", icon: LayoutDashboard },
+  //   {
+  //     id: "libraryManagement",
+  //     name: "Library Management",
+  //     icon: LayoutDashboard,
+  //   },
+  // ];
 
+const menuItems = [
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
+
+  // User Management
+  { id: "user", name: "User", icon: UserPlus },
+
+  // Academic
+  { id: "course", name: "Courses", icon: FileText },
+  { id: "schedule", name: "Schedule", icon: LayoutDashboard },
+
+  // Attendance
+  { id: "attendance", name: "Attendance", icon: CalendarCheck },
+  {
+    id: "codeBasedAttendence",
+    name: "Code Based Attendence",
+    icon: CalendarCheck,
+  },
+
+  // Exams & Result
+  { id: "upcomingExams", name: "Upcoming Exams", icon: FileText },
+  { id: "result", name: "Result", icon: FileText },
+  { id: "certificate", name: "Certificate", icon: FileText },
+
+  // Assignments
+  { id: "assignment", name: "Assignment", icon: LayoutDashboard },
+
+  // Study Material
+  { id: "notes", name: "Notes", icon: FileText },
+  { id: "documents", name: "Documents", icon: FileText },
+  { id: "record", name: "Recorded Lecture", icon: FileText },
+
+  // Communication
+  { id: "announcement", name: "Announcement", icon: FileText },
+  { id: "event", name: "Event", icon: FileText },
+
+  // Meetings
+  { id: "zoomMeeting", name: "Zoom Meeting", icon: LayoutDashboard },
+
+  // Management
+  { id: "fees", name: "Fees Record", icon: Clock },
+  { id: "leave", name: "Leave Management", icon: Clock },
+  {
+    id: "libraryManagement",
+    name: "Library Management",
+    icon: LayoutDashboard,
+  },
+
+  // Career
+  { id: "jobsOpportunity", name: "Jobs Opportunity", icon: FileText },
+];
   const handleLinkClick = (id) => {
     setCurrentView(id);
     if (isMobile) setIsMobileOpen(false);

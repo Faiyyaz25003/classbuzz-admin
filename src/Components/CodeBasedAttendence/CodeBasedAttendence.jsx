@@ -17,7 +17,287 @@ import {
 
 const API = "http://localhost:5000/api";
 
-/* ---------------- Countdown Hook ---------------- */
+/* ── Font constants — avoids broken quotes inside JSX style props ── */
+const SYSTEM_FONT =
+  "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'";
+const MONO_FONT =
+  "'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace";
+
+/* ── Global Styles Injection ── */
+const STYLES = `
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f0f5;
+    --border: #e4e4ec;
+    --border2: #d0d0df;
+    --text: #111118;
+    --muted: #8888a0;
+    --accent: #5b4ef5;
+    --accent2: #7c6af7;
+    --green: #0ea87a;
+    --red: #e5342e;
+    --amber: #d97706;
+    --blue: #2563eb;
+  }
+
+  .att-root * { box-sizing: border-box; margin: 0; padding: 0; }
+  .att-root {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+
+  .att-root .font-display {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 800; letter-spacing: -0.02em;
+  }
+  .att-root .font-mono {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  }
+
+  .att-root .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .att-root .card-inner { padding: 24px; }
+
+  .att-root .btn {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+  .att-root .btn:hover { background: #e8e6ff; border-color: var(--accent); color: var(--accent); }
+  .att-root .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .att-root .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .att-root .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  .att-root .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 13px; color: var(--muted);
+    background: none; border: none; cursor: pointer;
+    transition: color 0.15s; padding: 0;
+  }
+  .att-root .back-btn:hover { color: var(--text); }
+
+  .att-root .tab-pill {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .att-root .tab-pill:hover { color: var(--accent); background: #eeecff; border-color: var(--accent2); }
+  .att-root .tab-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .att-root .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .att-root .stat-label {
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .att-root .stat-value {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .att-root .row-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .att-root .row-item:last-child { border-bottom: none; }
+  .att-root .row-item:hover { background: #f5f4ff; }
+
+  .att-root .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .att-root .badge-green { background: rgba(14,168,122,0.1); color: var(--green); border: 1px solid rgba(14,168,122,0.25); }
+  .att-root .badge-red   { background: rgba(229,52,46,0.09);  color: var(--red);   border: 1px solid rgba(229,52,46,0.22); }
+  .att-root .badge-amber { background: rgba(217,119,6,0.1);   color: var(--amber); border: 1px solid rgba(217,119,6,0.25); }
+  .att-root .badge-blue  { background: rgba(37,99,235,0.09);  color: var(--blue);  border: 1px solid rgba(37,99,235,0.22); }
+  .att-root .badge-accent{ background: rgba(91,78,245,0.1);   color: var(--accent);border: 1px solid rgba(91,78,245,0.25); }
+
+  .att-root table { width: 100%; border-collapse: collapse; }
+  .att-root thead tr { background: #f8f8fc; border-bottom: 1px solid var(--border); }
+  .att-root thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .att-root tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  .att-root tbody tr:last-child { border-bottom: none; }
+  .att-root tbody tr:hover { background: #fafafe; }
+  .att-root tbody td { padding: 13px 16px; font-size: 14px; color: var(--text); }
+
+  .att-root .progress-bar  { background: #e8e8f0; border-radius: 999px; height: 6px; overflow: hidden; }
+  .att-root .progress-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+
+  .att-root .code-box {
+    background: #faf9ff;
+    border: 2px solid var(--accent);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(91,78,245,0.1);
+  }
+  .att-root .code-box::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--accent) 0%, transparent 60%);
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  .att-root .live-dot {
+    width: 8px; height: 8px;
+    background: var(--red); border-radius: 50%;
+    animation: pulse-dot 1.2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  .att-root .page-enter { animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .att-root input[type="date"],
+  .att-root input[type="month"] {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .att-root input[type="date"]:focus,
+  .att-root input[type="month"]:focus { border-color: var(--accent); }
+  .att-root input[type="date"]::-webkit-calendar-picker-indicator,
+  .att-root input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: opacity(0.5); cursor: pointer;
+  }
+
+  .att-root .recharts-cartesian-grid line { stroke: #e4e4ec; }
+  .att-root .recharts-text { fill: var(--muted) !important; font-size: 11px; }
+  .att-root .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background: var(--surface) !important;
+    border: 1px solid var(--border2) !important;
+    border-radius: 10px !important;
+  }
+  .att-root .recharts-tooltip-label {
+    color: var(--text) !important;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+  }
+
+  .att-root .section-title {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji",
+      "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 700; font-size: 18px; color: var(--text); margin-bottom: 4px;
+  }
+  .att-root .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  .att-root .calendar-day {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+    transition: transform 0.1s; cursor: default;
+  }
+  .att-root .calendar-day:hover { transform: scale(1.08); }
+
+  .att-root .alert-card {
+    background: rgba(229,52,46,0.05);
+    border: 1px solid rgba(229,52,46,0.18);
+    border-radius: 14px;
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .att-root .empty-state {
+    padding: 64px; text-align: center; color: var(--muted); font-size: 14px;
+  }
+`;
+
+/* ── Style Injector ── */
+function StyleInjector() {
+  useEffect(() => {
+    const id = "att-styles";
+    if (!document.getElementById(id)) {
+      const el = document.createElement("style");
+      el.id = id;
+      el.textContent = STYLES;
+      document.head.appendChild(el);
+    }
+  }, []);
+  return null;
+}
+
+/* ── Countdown Hook ── */
 function useCountdown(expiresAt) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   useEffect(() => {
@@ -41,48 +321,64 @@ function useCountdown(expiresAt) {
   return { display: `${minutes}:${seconds}`, secondsLeft };
 }
 
-/* ================================================================
-   UTILITY — Fetch students by department (courseName) + semester
-   ================================================================
-   User Model fields:
-     departments: [String]   e.g. ["BCA", "MCA"]
-     semester:    String     e.g. "3"
-     positions:   [String]   e.g. ["Student", "Teacher"]
-
-   courseId here is actually the course NAME (e.g. "BCA") because
-   the Course model stores name, and students store it in departments[].
-   We only show users who have "Student" in positions[].
-   ================================================================ */
+/* ── Fetch Filtered Students ── */
 async function fetchFilteredStudents(courseName, semester) {
   const res = await axios.get(`${API}/users`);
   const allUsers = res.data || [];
-
   return allUsers.filter((user) => {
-    // Must be a Student
     const isStudent = Array.isArray(user.positions)
       ? user.positions.some((p) => p.toLowerCase() === "student")
       : false;
-
-    // Must belong to this department/course
     const inDepartment = Array.isArray(user.departments)
       ? user.departments.some(
           (d) => d.toLowerCase() === String(courseName).toLowerCase(),
         )
       : false;
-
-    // Must be in this semester
     const inSemester = String(user.semester).trim() === String(semester).trim();
-
     return isStudent && inDepartment && inSemester;
   });
 }
 
+/* ── Custom Tooltip ── */
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #d0d0df",
+        borderRadius: 10,
+        padding: "10px 14px",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: MONO_FONT,
+          fontSize: 11,
+          color: "#8888a0",
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </p>
+      {payload.map((p, i) => (
+        <p
+          key={i}
+          style={{ fontSize: 13, color: p.color, fontFamily: MONO_FONT }}
+        >
+          {p.name}: <strong>{p.value}</strong>
+        </p>
+      ))}
+    </div>
+  );
+};
+
 /* ================================================================
    SEMESTER ANALYTICS PAGE
-   ================================================================ */
+================================================================ */
 function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
   const [percentage, setPercentage] = useState([]);
-  const [students, setStudents] = useState([]);
   const [allRecords, setAllRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
@@ -95,16 +391,12 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [percRes, filteredStudents] = await Promise.all([
+        const [percRes] = await Promise.all([
           axios.get(`${API}/attendance-record/subject-percentage`, {
             params: { courseId, semester },
           }),
-          // ✅ Filter by departments[] containing courseName + semester match
-          fetchFilteredStudents(courseName, semester),
         ]);
         setPercentage(percRes.data || []);
-        setStudents(filteredStudents);
-
         const recRes = await axios.get(`${API}/attendance-record/teacher`, {
           params: { courseId, semester, allDates: true },
         });
@@ -118,22 +410,14 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
     fetchAll();
   }, [courseId, semester]);
 
-  /* ---------- Derived Data ---------- */
-  const studentRanking = students
-    .map((stu) => {
-      const records = allRecords.filter((r) => r.userId === stu._id);
-      const present = records.filter((r) => r.status === "Present").length;
-      const total = records.length;
-      const pct = total ? Math.round((present / total) * 100) : 0;
-      return { name: stu.name, present, total, pct };
-    })
-    .sort((a, b) => b.pct - a.pct);
-
   const lowAttendance = percentage.filter((s) => s.percentage < 75);
+
+  // Normalize date — handles "YYYY-MM-DD", ISO timestamps, createdAt fallback
+  const getDateStr = (r) => (r.date || r.createdAt || "").slice(0, 10);
 
   const monthlyMap = {};
   allRecords.forEach((r) => {
-    const month = (r.date || "").slice(0, 7);
+    const month = getDateStr(r).slice(0, 7);
     if (!month) return;
     if (!monthlyMap[month]) monthlyMap[month] = { present: 0, absent: 0 };
     if (r.status === "Present") monthlyMap[month].present++;
@@ -144,11 +428,12 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
     .map((m) => ({ month: m, ...monthlyMap[m] }));
 
   const calendarRecords = allRecords.filter((r) =>
-    (r.date || "").startsWith(calendarMonth),
+    getDateStr(r).startsWith(calendarMonth),
   );
   const calendarDayMap = {};
   calendarRecords.forEach((r) => {
-    const day = parseInt((r.date || "").slice(8, 10));
+    const day = parseInt(getDateStr(r).slice(8, 10));
+    if (!day) return;
     if (!calendarDayMap[day]) calendarDayMap[day] = { present: 0, absent: 0 };
     if (r.status === "Present") calendarDayMap[day].present++;
     else calendarDayMap[day].absent++;
@@ -159,9 +444,8 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
   const firstDay = new Date(calYear, calMonthNum - 1, 1).getDay();
 
   const today = new Date().toISOString().slice(0, 10);
-  const todayRecords = allRecords.filter((r) => r.date === today);
-  const todayPresent = todayRecords.filter(
-    (r) => r.status === "Present",
+  const todayPresent = allRecords.filter(
+    (r) => getDateStr(r) === today && r.status === "Present",
   ).length;
   const overallPct = percentage.length
     ? Math.round(
@@ -170,168 +454,179 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
     : 0;
 
   const tabs = [
-    { id: "overview", label: "📊 Overview" },
-    { id: "monthly", label: "📅 Monthly Graph" },
-    { id: "ranking", label: "🏆 Student Ranking" },
-    { id: "alerts", label: "⚠️ Alerts" },
-    { id: "calendar", label: "🗓 Calendar" },
-    { id: "live", label: "🔴 Live" },
+    { id: "overview", label: "Overview" },
+    { id: "monthly", label: "Monthly" },
+    { id: "alerts", label: "Alerts" },
+    { id: "calendar", label: "Calendar" },
+  ];
+
+  const stats = [
+    {
+      label: "Overall Attendance",
+      value: `${overallPct}%`,
+      color: overallPct >= 75 ? "var(--green)" : "var(--red)",
+    },
+    {
+      label: "Subjects Tracked",
+      value: percentage.length,
+      color: "var(--blue)",
+    },
+    { label: "Today Present", value: todayPresent, color: "var(--accent2)" },
+    {
+      label: "Low Attendance",
+      value: lowAttendance.length,
+      color: "var(--amber)",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* HEADER */}
-      <div className="bg-white border-b px-10 py-5 flex items-center gap-4">
+    <div
+      className="att-root page-enter"
+      style={{ padding: "32px 40px", minHeight: "100vh" }}
+    >
+      <div style={{ marginBottom: 32 }}>
         <button
+          className="back-btn"
           onClick={onBack}
-          className="text-gray-500 hover:text-gray-800 text-sm"
+          style={{ marginBottom: 20 }}
         >
-          ← Back
+          ← back
         </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Semester {semester} — Analytics
-          </h1>
-          <p className="text-sm text-gray-400">Advanced Attendance Dashboard</p>
-        </div>
+        <p
+          style={{
+            fontFamily: MONO_FONT,
+            fontSize: 11,
+            color: "var(--muted)",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: 6,
+          }}
+        >
+          Semester {semester} · {courseName}
+        </p>
+        <h1
+          className="font-display"
+          style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-0.02em" }}
+        >
+          Analytics Dashboard
+        </h1>
       </div>
 
-      {/* STAT CARDS */}
-      <div className="px-10 pt-8 grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {[
-          {
-            label: "Overall Attendance",
-            value: `${overallPct}%`,
-            color: overallPct >= 75 ? "text-green-600" : "text-red-500",
-            bg: "bg-green-50",
-          },
-          {
-            label: "Subjects Tracked",
-            value: percentage.length,
-            color: "text-blue-600",
-            bg: "bg-blue-50",
-          },
-          {
-            label: "Today Present",
-            value: todayPresent,
-            color: "text-indigo-600",
-            bg: "bg-indigo-50",
-          },
-          {
-            label: "Low Attendance",
-            value: lowAttendance.length,
-            color: "text-red-500",
-            bg: "bg-red-50",
-          },
-        ].map((card, i) => (
-          <div key={i} className={`${card.bg} rounded-xl p-5 border`}>
-            <p className="text-xs text-gray-500 mb-1">{card.label}</p>
-            <p className={`text-3xl font-black ${card.color}`}>{card.value}</p>
+      {/* Stat Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 16,
+          marginBottom: 32,
+        }}
+      >
+        {stats.map((s, i) => (
+          <div className="stat-card" key={i}>
+            <p className="stat-label">{s.label}</p>
+            <p className="stat-value" style={{ color: s.color }}>
+              {s.value}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* TABS */}
-      <div className="px-10 mb-6">
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                activeTab === t.id
-                  ? "bg-gray-900 text-white"
-                  : "bg-white border text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+      {/* Tabs */}
+      <div
+        style={{ display: "flex", gap: 8, marginBottom: 28, flexWrap: "wrap" }}
+      >
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            className={`tab-pill ${activeTab === t.id ? "active" : ""}`}
+            onClick={() => setActiveTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* TAB CONTENT */}
-      <div className="px-10 pb-16">
-        {loading ? (
-          <div className="bg-white rounded-xl p-12 text-center text-gray-400">
-            Loading...
-          </div>
-        ) : (
-          <>
-            {/* ── OVERVIEW ── */}
-            {activeTab === "overview" && (
-              <div className="bg-white rounded-xl shadow p-6">
-                <h3 className="text-lg font-semibold mb-1">
-                  Subject Wise Attendance %
-                </h3>
-                <p className="text-sm text-gray-400 mb-6">
-                  All subjects this semester
+      {/* Content */}
+      {loading ? (
+        <div className="card">
+          <div className="empty-state">Loading data…</div>
+        </div>
+      ) : (
+        <>
+          {/* OVERVIEW */}
+          {activeTab === "overview" && (
+            <div className="card page-enter">
+              <div className="card-inner">
+                <p className="section-title">Subject Attendance</p>
+                <p className="section-sub">
+                  Breakdown by subject this semester
                 </p>
                 {percentage.length === 0 ? (
-                  <p className="text-gray-400">No data yet</p>
+                  <div className="empty-state">No data yet</div>
                 ) : (
                   <>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={280}>
                       <BarChart
                         data={percentage}
-                        margin={{ top: 10, right: 20, left: 0, bottom: 40 }}
+                        margin={{ top: 10, right: 10, left: -10, bottom: 40 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e4e4ec" />
                         <XAxis
                           dataKey="subject"
                           angle={-25}
                           textAnchor="end"
                           interval={0}
-                          tick={{ fontSize: 12 }}
+                          tick={{
+                            fill: "#8888a0",
+                            fontSize: 11,
+                            fontFamily: MONO_FONT,
+                          }}
                         />
                         <YAxis
                           domain={[0, 100]}
                           tickFormatter={(v) => `${v}%`}
-                          allowDecimals={false}
+                          tick={{ fill: "#8888a0", fontSize: 11 }}
                         />
-                        <Tooltip formatter={(v) => `${v}%`} />
+                        <Tooltip content={<CustomTooltip />} />
                         <Bar
                           dataKey="percentage"
                           name="Attendance %"
-                          radius={[4, 4, 0, 0]}
-                          fill="#6366f1"
+                          radius={[6, 6, 0, 0]}
+                          fill="var(--accent)"
                         />
                       </BarChart>
                     </ResponsiveContainer>
-                    <table className="w-full mt-8">
+                    <table style={{ marginTop: 32 }}>
                       <thead>
-                        <tr className="bg-gray-100">
-                          <th className="p-3 text-left text-sm text-gray-600">
-                            Subject
-                          </th>
-                          <th className="p-3 text-left text-sm text-gray-600">
-                            Attendance %
-                          </th>
-                          <th className="p-3 text-left text-sm text-gray-600">
-                            Status
-                          </th>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Attendance %</th>
+                          <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {percentage.map((sub, i) => (
-                          <tr key={i} className="border-t hover:bg-gray-50">
-                            <td className="p-3 font-medium">{sub.subject}</td>
-                            <td className="p-3 font-bold">
+                          <tr key={i}>
+                            <td style={{ fontWeight: 500 }}>{sub.subject}</td>
+                            <td>
                               <span
-                                className={
-                                  sub.percentage >= 75
-                                    ? "text-green-600"
-                                    : "text-red-500"
-                                }
+                                className="font-mono"
+                                style={{
+                                  fontWeight: 700,
+                                  color:
+                                    sub.percentage >= 75
+                                      ? "var(--green)"
+                                      : "var(--red)",
+                                }}
                               >
                                 {sub.percentage}%
                               </span>
                             </td>
-                            <td className="p-3">
+                            <td>
                               <span
-                                className={`px-3 py-1 rounded-full text-xs font-semibold ${sub.percentage >= 75 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}
+                                className={`badge ${sub.percentage >= 75 ? "badge-green" : "badge-red"}`}
                               >
-                                {sub.percentage >= 75 ? "✓ Good" : "⚠ Low"}
+                                {sub.percentage >= 75 ? "Good" : "Low"}
                               </span>
                             </td>
                           </tr>
@@ -341,282 +636,246 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
                   </>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ── MONTHLY GRAPH ── */}
-            {activeTab === "monthly" && (
-              <div className="bg-white rounded-xl shadow p-6">
-                <h3 className="text-lg font-semibold mb-1">
-                  Monthly Attendance Graph
-                </h3>
-                <p className="text-sm text-gray-400 mb-6">
-                  Month-wise present vs absent trend
-                </p>
+          {/* MONTHLY */}
+          {activeTab === "monthly" && (
+            <div className="card page-enter">
+              <div className="card-inner">
+                <p className="section-title">Monthly Trend</p>
+                <p className="section-sub">Present vs absent across months</p>
                 {monthlyData.length === 0 ? (
-                  <p className="text-gray-400">No monthly data available</p>
+                  <div className="empty-state">No monthly data available</div>
                 ) : (
                   <ResponsiveContainer width="100%" height={320}>
                     <LineChart
                       data={monthlyData}
-                      margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                      margin={{ top: 10, right: 20, left: -10, bottom: 10 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis allowDecimals={false} />
-                      <Tooltip />
-                      <Legend />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e4e4ec" />
+                      <XAxis
+                        dataKey="month"
+                        tick={{
+                          fill: "#8888a0",
+                          fontSize: 11,
+                          fontFamily: MONO_FONT,
+                        }}
+                      />
+                      <YAxis
+                        allowDecimals={false}
+                        tick={{ fill: "#8888a0", fontSize: 11 }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend
+                        wrapperStyle={{
+                          fontFamily: MONO_FONT,
+                          fontSize: 11,
+                          color: "#8888a0",
+                        }}
+                      />
                       <Line
                         type="monotone"
                         dataKey="present"
-                        stroke="#22c55e"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
+                        stroke="var(--green)"
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "var(--green)" }}
                         name="Present"
                       />
                       <Line
                         type="monotone"
                         dataKey="absent"
-                        stroke="#ef4444"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
+                        stroke="var(--red)"
+                        strokeWidth={2.5}
+                        dot={{ r: 4, fill: "var(--red)" }}
                         name="Absent"
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ── STUDENT RANKING ── */}
-            {activeTab === "ranking" && (
-              <div className="bg-white rounded-xl shadow p-6">
-                <h3 className="text-lg font-semibold mb-1">Student Ranking</h3>
-                <p className="text-sm text-gray-400 mb-2">
-                  Ranked by overall attendance %
-                </p>
-                {/* ✅ Shows how many students are loaded for this course+semester */}
-                <p className="text-xs text-indigo-500 mb-6 font-semibold">
-                  {students.length} student(s) enrolled in Semester {semester}
-                </p>
-                {studentRanking.length === 0 ? (
-                  <p className="text-gray-400">No student data available</p>
-                ) : (
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Rank
-                        </th>
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Student
-                        </th>
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Present
-                        </th>
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Total
-                        </th>
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Attendance %
-                        </th>
-                        <th className="p-3 text-left text-sm text-gray-600">
-                          Badge
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {studentRanking.map((stu, i) => (
-                        <tr key={i} className="border-t hover:bg-gray-50">
-                          <td className="p-3 font-bold text-gray-500">
-                            {i === 0
-                              ? "🥇"
-                              : i === 1
-                                ? "🥈"
-                                : i === 2
-                                  ? "🥉"
-                                  : `#${i + 1}`}
-                          </td>
-                          <td className="p-3 font-semibold">{stu.name}</td>
-                          <td className="p-3 text-green-600 font-semibold">
-                            {stu.present}
-                          </td>
-                          <td className="p-3 text-gray-500">{stu.total}</td>
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className={`h-2 rounded-full ${stu.pct >= 75 ? "bg-green-500" : "bg-red-400"}`}
-                                  style={{ width: `${stu.pct}%` }}
-                                />
-                              </div>
-                              <span
-                                className={`font-bold text-sm ${stu.pct >= 75 ? "text-green-600" : "text-red-500"}`}
-                              >
-                                {stu.pct}%
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                stu.pct >= 90
-                                  ? "bg-green-100 text-green-700"
-                                  : stu.pct >= 75
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-red-100 text-red-600"
-                              }`}
-                            >
-                              {stu.pct >= 90
-                                ? "⭐ Excellent"
-                                : stu.pct >= 75
-                                  ? "✓ Good"
-                                  : "⚠ At Risk"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            )}
-
-            {/* ── LOW ATTENDANCE ALERTS ── */}
-            {activeTab === "alerts" && (
-              <div className="bg-white rounded-xl shadow p-6">
-                <h3 className="text-lg font-semibold mb-1">
-                  Low Attendance Alerts
-                </h3>
-                <p className="text-sm text-gray-400 mb-6">
-                  Subjects with attendance below 75%
-                </p>
+          {/* ALERTS */}
+          {activeTab === "alerts" && (
+            <div className="card page-enter">
+              <div className="card-inner">
+                <p className="section-title">Attendance Alerts</p>
+                <p className="section-sub">Subjects & students below 75%</p>
                 {lowAttendance.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p className="text-4xl mb-3">🎉</p>
-                    <p className="text-green-600 font-semibold text-lg">
-                      All subjects above 75%!
+                  <div style={{ textAlign: "center", padding: "48px 0" }}>
+                    <p style={{ fontSize: 40, marginBottom: 12 }}>🎉</p>
+                    <p
+                      style={{
+                        color: "var(--green)",
+                        fontFamily: SYSTEM_FONT,
+                        fontWeight: 700,
+                        fontSize: 18,
+                      }}
+                    >
+                      All subjects above 75%
                     </p>
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p
+                      style={{
+                        color: "var(--muted)",
+                        fontSize: 13,
+                        marginTop: 6,
+                      }}
+                    >
                       Great attendance this semester
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
                     {lowAttendance.map((sub, i) => (
-                      <div
-                        key={i}
-                        className="border border-red-200 bg-red-50 rounded-xl p-5 flex items-center justify-between"
-                      >
+                      <div className="alert-card" key={i}>
                         <div>
-                          <p className="font-bold text-gray-800">
+                          <p style={{ fontWeight: 600, marginBottom: 4 }}>
                             {sub.subject}
                           </p>
-                          <p className="text-sm text-red-500 mt-1">
-                            {75 - sub.percentage}% below required attendance
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: "var(--red)",
+                              fontFamily: MONO_FONT,
+                            }}
+                          >
+                            {75 - sub.percentage}% below required
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-3xl font-black text-red-500">
+                        <div style={{ textAlign: "right" }}>
+                          <p
+                            className="font-display"
+                            style={{
+                              fontSize: 32,
+                              fontWeight: 800,
+                              color: "var(--red)",
+                              lineHeight: 1,
+                            }}
+                          >
                             {sub.percentage}%
                           </p>
-                          <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">
-                            ⚠ Critical
+                          <span
+                            className="badge badge-red"
+                            style={{ marginTop: 6 }}
+                          >
+                            Critical
                           </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-
-                {studentRanking.filter((s) => s.pct < 75).length > 0 && (
-                  <div className="mt-8">
-                    <h4 className="font-semibold text-gray-700 mb-4">
-                      Students At Risk
-                    </h4>
-                    <div className="space-y-3">
-                      {studentRanking
-                        .filter((s) => s.pct < 75)
-                        .map((stu, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center justify-between border border-orange-200 bg-orange-50 rounded-lg p-4"
-                          >
-                            <p className="font-semibold text-gray-800">
-                              {stu.name}
-                            </p>
-                            <div className="flex items-center gap-3">
-                              <div className="w-20 bg-orange-200 rounded-full h-2">
-                                <div
-                                  className="h-2 rounded-full bg-orange-500"
-                                  style={{ width: `${stu.pct}%` }}
-                                />
-                              </div>
-                              <span className="font-bold text-orange-600 text-sm">
-                                {stu.pct}%
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* ── CALENDAR ── */}
-            {activeTab === "calendar" && (
-              <div className="bg-white rounded-xl shadow p-6">
-                <div className="flex items-center justify-between mb-6">
+          {/* CALENDAR */}
+          {activeTab === "calendar" && (
+            <div className="card page-enter">
+              <div className="card-inner">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 24,
+                  }}
+                >
                   <div>
-                    <h3 className="text-lg font-semibold">
+                    <p className="section-title" style={{ marginBottom: 4 }}>
                       Attendance Calendar
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      Daily attendance overview
+                    </p>
+                    <p style={{ fontSize: 13, color: "var(--muted)" }}>
+                      Daily overview
                     </p>
                   </div>
                   <input
                     type="month"
                     value={calendarMonth}
                     onChange={(e) => setCalendarMonth(e.target.value)}
-                    className="border rounded-lg p-2 text-sm"
                   />
                 </div>
-                <div className="flex gap-4 mb-4 text-xs">
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-green-400 inline-block" />{" "}
-                    High Attendance
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />{" "}
-                    Low Attendance
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-3 h-3 rounded-full bg-gray-200 inline-block" />{" "}
-                    No Class
-                  </span>
+
+                <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
+                  {[
+                    ["var(--green)", "High Attendance"],
+                    ["var(--red)", "Low Attendance"],
+                    ["#f0f0f5", "No Class"],
+                  ].map(([c, l]) => (
+                    <span
+                      key={l}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 11,
+                        fontFamily: MONO_FONT,
+                        color: "var(--muted)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          background: c,
+                          display: "inline-block",
+                        }}
+                      />
+                      {l}
+                    </span>
+                  ))}
                 </div>
-                <div className="grid grid-cols-7 mb-2">
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                    marginBottom: 8,
+                  }}
+                >
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                     (d) => (
                       <div
                         key={d}
-                        className="text-center text-xs font-semibold text-gray-500 py-2"
+                        style={{
+                          textAlign: "center",
+                          fontFamily: MONO_FONT,
+                          fontSize: 10,
+                          color: "var(--muted)",
+                          padding: "8px 0",
+                          letterSpacing: "0.05em",
+                        }}
                       >
                         {d}
                       </div>
                     ),
                   )}
                 </div>
-                <div className="grid grid-cols-7 gap-1">
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(7, 1fr)",
+                    gap: 6,
+                  }}
+                >
                   {Array.from({ length: firstDay }).map((_, i) => (
-                    <div key={`empty-${i}`} />
+                    <div key={`e-${i}`} />
                   ))}
                   {Array.from({ length: daysInMonth }).map((_, i) => {
                     const day = i + 1;
                     const data = calendarDayMap[day];
                     const isToday =
-                      new Date().toISOString().slice(0, 10) ===
+                      today ===
                       `${calendarMonth}-${String(day).padStart(2, "0")}`;
                     const pct = data
                       ? Math.round(
@@ -626,189 +885,51 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
                     return (
                       <div
                         key={day}
+                        className="calendar-day"
                         title={
                           data
                             ? `Present: ${data.present}, Absent: ${data.absent}`
                             : "No class"
                         }
-                        className={`aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-semibold cursor-default transition
-                          ${isToday ? "ring-2 ring-gray-900" : ""}
-                          ${pct === null ? "bg-gray-50 text-gray-400" : pct >= 75 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}
-                        `}
+                        style={{
+                          background:
+                            pct === null
+                              ? "#f0f0f5"
+                              : pct >= 75
+                                ? "rgba(14,168,122,0.1)"
+                                : "rgba(229,52,46,0.09)",
+                          color:
+                            pct === null
+                              ? "var(--muted)"
+                              : pct >= 75
+                                ? "var(--green)"
+                                : "var(--red)",
+                          outline: isToday ? "2px solid var(--accent)" : "none",
+                          outlineOffset: 2,
+                        }}
                       >
-                        <span className="text-sm font-bold">{day}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>
+                          {day}
+                        </span>
                         {pct !== null && (
-                          <span className="text-xs">{pct}%</span>
+                          <span style={{ fontSize: 10 }}>{pct}%</span>
                         )}
                       </div>
                     );
                   })}
                 </div>
               </div>
-            )}
-
-            {/* ── LIVE ── */}
-            {activeTab === "live" && (
-              <LiveDashboard
-                courseId={courseId}
-                semester={semester}
-                students={students}
-              />
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ================================================================
-   LIVE ATTENDANCE DASHBOARD
-   ================================================================ */
-function LiveDashboard({ courseId, semester, students }) {
-  const [liveRecords, setLiveRecords] = useState([]);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const today = new Date().toISOString().slice(0, 10);
-
-  const fetchLive = useCallback(async () => {
-    try {
-      const res = await axios.get(`${API}/attendance-record/teacher`, {
-        params: { courseId, semester, date: today },
-      });
-      setLiveRecords(res.data?.data || []);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.log("Live fetch error:", err.message);
-    }
-  }, [courseId, semester, today]);
-
-  useEffect(() => {
-    fetchLive();
-    const id = setInterval(fetchLive, 5000);
-    return () => clearInterval(id);
-  }, [fetchLive]);
-
-  // ✅ students prop already filtered — no extra filter needed here
-  const mergedLive = students.map((stu) => {
-    const record = liveRecords.find((r) => r.userId === stu._id);
-    return {
-      ...stu,
-      status: record ? record.status : "Absent",
-      markedAt: record?.markedAt,
-      subjectName: record?.subjectName,
-    };
-  });
-
-  const presentCount = mergedLive.filter((r) => r.status === "Present").length;
-  const absentCount = mergedLive.filter((r) => r.status === "Absent").length;
-  const total = mergedLive.length;
-  const livePct = total ? Math.round((presentCount / total) * 100) : 0;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
-          <p className="text-xs text-gray-500 mb-1">Present Today</p>
-          <p className="text-4xl font-black text-green-600">{presentCount}</p>
-        </div>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-          <p className="text-xs text-gray-500 mb-1">Absent Today</p>
-          <p className="text-4xl font-black text-red-500">{absentCount}</p>
-        </div>
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 text-center">
-          <p className="text-xs text-gray-500 mb-1">Live %</p>
-          <p
-            className={`text-4xl font-black ${livePct >= 75 ? "text-indigo-600" : "text-red-500"}`}
-          >
-            {livePct}%
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow p-6">
-        <div className="flex justify-between mb-2">
-          <span className="text-sm font-semibold text-gray-700">
-            Today's Attendance Progress
-          </span>
-          <span className="text-sm text-gray-400">
-            Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "—"}
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-          <div
-            className={`h-4 rounded-full transition-all duration-500 ${livePct >= 75 ? "bg-green-500" : "bg-red-400"}`}
-            style={{ width: `${livePct}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-1 text-xs text-gray-400">
-          <span>0%</span>
-          <span className="text-orange-500 font-semibold">75% Required</span>
-          <span>100%</span>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <div className="p-5 border-b flex items-center justify-between">
-          <h3 className="font-bold">Live Student Status</h3>
-          <span className="flex items-center gap-2 text-xs text-red-500 font-semibold">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            LIVE — Auto-refreshing every 5s
-          </span>
-        </div>
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="p-3 text-left text-sm">#</th>
-              <th className="p-3 text-left text-sm">Student</th>
-              <th className="p-3 text-left text-sm">Status</th>
-              <th className="p-3 text-left text-sm">Subject</th>
-              <th className="p-3 text-left text-sm">Marked At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mergedLive.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-400">
-                  No students found
-                </td>
-              </tr>
-            ) : (
-              mergedLive.map((row, i) => (
-                <tr key={row._id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 text-gray-500">{i + 1}</td>
-                  <td className="p-3 font-semibold">{row.name}</td>
-                  <td className="p-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        row.status === "Present"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {row.status === "Present" ? "✓ Present" : "✗ Absent"}
-                    </span>
-                  </td>
-                  <td className="p-3 text-sm text-gray-500">
-                    {row.subjectName || "—"}
-                  </td>
-                  <td className="p-3 text-sm text-gray-500">
-                    {row.markedAt
-                      ? new Date(row.markedAt).toLocaleTimeString()
-                      : "—"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
 
 /* ================================================================
    SUBJECT PAGE
-   ================================================================ */
+================================================================ */
 function TeacherSubjectPage({
   subject,
   courseId,
@@ -830,9 +951,7 @@ function TeacherSubjectPage({
 
   const fetchStudents = useCallback(async () => {
     try {
-      // ✅ Filter by departments[] containing courseName + semester
-      const filtered = await fetchFilteredStudents(courseName, semester);
-      setStudents(filtered);
+      setStudents(await fetchFilteredStudents(courseName, semester));
     } catch {
       setStudents([]);
     }
@@ -851,7 +970,7 @@ function TeacherSubjectPage({
 
   const fetchAnalytics = useCallback(async () => {
     try {
-      const [weeklyRes, percentageRes] = await Promise.all([
+      const [weeklyRes, pctRes] = await Promise.all([
         axios.get(`${API}/attendance-record/weekly`, {
           params: { courseId, semester, subjectId },
         }),
@@ -860,7 +979,7 @@ function TeacherSubjectPage({
         }),
       ]);
       setWeekly(weeklyRes.data || {});
-      setPercentage(percentageRes.data || []);
+      setPercentage(pctRes.data || []);
     } catch (err) {
       console.log("Analytics error:", err.message);
       setWeekly({});
@@ -873,10 +992,9 @@ function TeacherSubjectPage({
     fetchAttendance();
     fetchAnalytics();
   }, [fetchStudents, fetchAttendance, fetchAnalytics]);
-
   useEffect(() => {
-    const interval = setInterval(fetchAttendance, 5000);
-    return () => clearInterval(interval);
+    const id = setInterval(fetchAttendance, 5000);
+    return () => clearInterval(id);
   }, [fetchAttendance]);
 
   const handleGenerateCode = async () => {
@@ -916,85 +1034,190 @@ function TeacherSubjectPage({
     }));
 
   return (
-    <div className="p-10 bg-gray-50 min-h-screen">
-      <button onClick={onBack} className="mb-6 text-gray-500">
-        ← Back
+    <div
+      className="att-root page-enter"
+      style={{ padding: "32px 40px", minHeight: "100vh" }}
+    >
+      <button
+        className="back-btn"
+        onClick={onBack}
+        style={{ marginBottom: 20 }}
+      >
+        ← back
       </button>
-      <h1 className="text-3xl font-bold mb-2">{subject.name}</h1>
-      {/* ✅ Student count badge */}
-      <p className="text-xs text-indigo-500 font-semibold mb-6">
-        {students.length} student(s) enrolled in Semester {semester}
-      </p>
 
-      <div className="flex items-center gap-4 mb-6">
+      <div style={{ marginBottom: 32 }}>
+        <p
+          style={{
+            fontFamily: MONO_FONT,
+            fontSize: 11,
+            color: "var(--muted)",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: 6,
+          }}
+        >
+          Subject · {courseName} · Semester {semester}
+        </p>
+        <h1
+          className="font-display"
+          style={{
+            fontSize: 36,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            marginBottom: 4,
+          }}
+        >
+          {subject.name}
+        </h1>
+        <p
+          style={{
+            fontFamily: MONO_FONT,
+            fontSize: 11,
+            color: "var(--accent2)",
+          }}
+        >
+          {students.length} enrolled students
+        </p>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 28,
+        }}
+      >
         <input
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="border p-2 rounded-lg"
         />
         <button
+          className="btn btn-primary"
           onClick={handleGenerateCode}
           disabled={!isToday}
-          className="border px-6 py-2 font-semibold rounded-lg disabled:opacity-40"
+          style={{ padding: "9px 20px" }}
         >
           Generate Code
         </button>
       </div>
 
       {codeData && (
-        <div className="border-4 border-black p-8 text-center mb-8 bg-white rounded-xl">
-          <p className="text-xs uppercase text-gray-400">Attendance Code</p>
-          <div className="text-6xl font-black tracking-[10px] font-mono">
+        <div className="code-box" style={{ marginBottom: 32 }}>
+          <p
+            style={{
+              fontFamily: MONO_FONT,
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              color: "var(--muted)",
+              marginBottom: 16,
+              textTransform: "uppercase",
+            }}
+          >
+            Attendance Code
+          </p>
+          <p
+            className="font-mono"
+            style={{
+              fontSize: 64,
+              fontWeight: 500,
+              letterSpacing: "0.18em",
+              color: "var(--accent2)",
+              lineHeight: 1,
+              marginBottom: 16,
+            }}
+          >
             {codeData.code}
-          </div>
-          <p>Expires in {display}</p>
+          </p>
+          <p
+            style={{
+              fontFamily: MONO_FONT,
+              fontSize: 14,
+              color: "var(--muted)",
+            }}
+          >
+            Expires in{" "}
+            <span style={{ color: "var(--text)", fontWeight: 600 }}>
+              {display}
+            </span>
+          </p>
         </div>
       )}
 
-      {/* STUDENT LIST */}
-      <div className="bg-white border rounded-xl overflow-hidden mb-10">
-        <div className="flex justify-between p-6 border-b">
-          <h2 className="font-bold">
+      {/* Attendance Table */}
+      <div className="card" style={{ marginBottom: 28 }}>
+        <div
+          style={{
+            padding: "16px 24px",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <p style={{ fontFamily: SYSTEM_FONT, fontWeight: 700, fontSize: 15 }}>
             Attendance
-            <span className="ml-4 text-green-600">{presentCount} Present</span>
-            <span className="ml-4 text-red-500">{absentCount} Absent</span>
-          </h2>
+          </p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <span className="badge badge-green">{presentCount} Present</span>
+            <span className="badge badge-red">{absentCount} Absent</span>
+          </div>
         </div>
-        <table className="w-full">
+        <table>
           <thead>
-            <tr className="bg-gray-100">
-              <th className="p-4">#</th>
-              <th className="p-4">Student</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Code</th>
-              <th className="p-4">Time</th>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Status</th>
+              <th>Code Used</th>
+              <th>Time</th>
             </tr>
           </thead>
           <tbody>
             {mergedList.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-400">
-                  No students found
+                <td colSpan={5}>
+                  <div className="empty-state">No students found</div>
                 </td>
               </tr>
             ) : (
               mergedList.map((row, i) => (
-                <tr key={row._id} className="border-t">
-                  <td className="p-4">{i + 1}</td>
-                  <td className="p-4 font-semibold">{row.name}</td>
-                  <td className="p-4">
+                <tr key={row._id}>
+                  <td>
                     <span
-                      className={`px-3 py-1 rounded text-xs ${row.status === "Present" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}
+                      className="font-mono"
+                      style={{ color: "var(--muted)", fontSize: 12 }}
+                    >
+                      {i + 1}
+                    </span>
+                  </td>
+                  <td style={{ fontWeight: 500 }}>{row.name}</td>
+                  <td>
+                    <span
+                      className={`badge ${row.status === "Present" ? "badge-green" : "badge-red"}`}
                     >
                       {row.status}
                     </span>
                   </td>
-                  <td className="p-4 font-mono">{row.codeUsed || "—"}</td>
-                  <td className="p-4 text-sm text-gray-500">
-                    {row.markedAt
-                      ? new Date(row.markedAt).toLocaleTimeString()
-                      : "—"}
+                  <td>
+                    <span
+                      className="font-mono"
+                      style={{ color: "var(--muted)", fontSize: 12 }}
+                    >
+                      {row.codeUsed || "—"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className="font-mono"
+                      style={{ color: "var(--muted)", fontSize: 12 }}
+                    >
+                      {row.markedAt
+                        ? new Date(row.markedAt).toLocaleTimeString()
+                        : "—"}
+                    </span>
                   </td>
                 </tr>
               ))
@@ -1003,56 +1226,96 @@ function TeacherSubjectPage({
         </table>
       </div>
 
-      {/* WEEKLY GRAPH */}
-      <div className="bg-white p-6 rounded shadow mb-10">
-        <h2 className="text-xl font-bold mb-2">Weekly Attendance Graph</h2>
-        <p className="text-sm text-gray-400 mb-6">Last 7 days</p>
-        {graphData.length === 0 ? (
-          <p className="text-gray-400">No weekly data</p>
-        ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={graphData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis allowDecimals={false} />
-              <Tooltip
-                labelFormatter={(label, payload) =>
-                  payload?.[0]?.payload?.fullDate || label
-                }
-              />
-              <Bar dataKey="present" fill="#22c55e" name="Present" />
-              <Bar dataKey="absent" fill="#ef4444" name="Absent" />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+      {/* Weekly Graph */}
+      <div className="card" style={{ marginBottom: 28 }}>
+        <div className="card-inner">
+          <p className="section-title">Weekly Attendance</p>
+          <p className="section-sub">Last 7 days overview</p>
+          {graphData.length === 0 ? (
+            <div className="empty-state">No weekly data</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={graphData}
+                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e4e4ec" />
+                <XAxis
+                  dataKey="date"
+                  tick={{
+                    fill: "#8888a0",
+                    fontSize: 11,
+                    fontFamily: MONO_FONT,
+                  }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "#8888a0", fontSize: 11 }}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  labelFormatter={(label, payload) =>
+                    payload?.[0]?.payload?.fullDate || label
+                  }
+                />
+                <Bar
+                  dataKey="present"
+                  fill="var(--green)"
+                  name="Present"
+                  radius={[5, 5, 0, 0]}
+                />
+                <Bar
+                  dataKey="absent"
+                  fill="var(--red)"
+                  name="Absent"
+                  radius={[5, 5, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
 
-      {/* WEEKLY TABLE */}
-      <div className="bg-white rounded shadow p-6 mb-10">
-        <h2 className="text-xl font-bold mb-2">Weekly Attendance Report</h2>
-        <p className="text-sm text-gray-400 mb-6">Last 7 days</p>
+      {/* Weekly Table */}
+      <div className="card" style={{ marginBottom: 28 }}>
+        <div className="card-inner">
+          <p className="section-title">Weekly Report</p>
+          <p className="section-sub">Day-wise breakdown</p>
+        </div>
         {Object.keys(weekly).length === 0 ? (
-          <p className="text-gray-400">No records</p>
+          <div className="empty-state">No records</div>
         ) : (
-          <table className="w-full">
+          <table>
             <thead>
-              <tr className="bg-gray-100">
-                <th className="p-3 text-left">Date</th>
-                <th className="p-3 text-left">Present</th>
-                <th className="p-3 text-left">Absent</th>
+              <tr>
+                <th>Date</th>
+                <th>Present</th>
+                <th>Absent</th>
               </tr>
             </thead>
             <tbody>
               {Object.keys(weekly)
                 .sort()
                 .map((date) => (
-                  <tr key={date} className="border-t">
-                    <td className="p-3">{date}</td>
-                    <td className="p-3 text-green-600 font-semibold">
-                      {weekly[date].present}
+                  <tr key={date}>
+                    <td className="font-mono" style={{ fontSize: 13 }}>
+                      {date}
                     </td>
-                    <td className="p-3 text-red-600 font-semibold">
-                      {weekly[date].absent}
+                    <td>
+                      <span
+                        className="font-mono"
+                        style={{ color: "var(--green)", fontWeight: 600 }}
+                      >
+                        {weekly[date].present}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className="font-mono"
+                        style={{ color: "var(--red)", fontWeight: 600 }}
+                      >
+                        {weekly[date].absent}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -1061,28 +1324,34 @@ function TeacherSubjectPage({
         )}
       </div>
 
-      {/* SUBJECT PERCENTAGE */}
-      <div className="bg-white rounded shadow p-6">
-        <h2 className="text-xl font-bold mb-6">Subject Wise Attendance %</h2>
+      {/* Subject % */}
+      <div className="card">
+        <div className="card-inner">
+          <p className="section-title">Subject Attendance %</p>
+          <p className="section-sub">All subjects this semester</p>
+        </div>
         {percentage.length === 0 ? (
-          <p className="text-gray-400">No data</p>
+          <div className="empty-state">No data</div>
         ) : (
-          <table className="w-full">
+          <table>
             <thead>
-              <tr className="bg-gray-100">
-                <th className="p-3 text-left">Subject</th>
-                <th className="p-3 text-left">Percentage</th>
+              <tr>
+                <th>Subject</th>
+                <th>Percentage</th>
               </tr>
             </thead>
             <tbody>
               {percentage.map((sub, i) => (
-                <tr key={i} className="border-t">
-                  <td className="p-3">{sub.subject}</td>
-                  <td className="p-3 font-bold">
+                <tr key={i}>
+                  <td style={{ fontWeight: 500 }}>{sub.subject}</td>
+                  <td>
                     <span
-                      className={
-                        sub.percentage >= 75 ? "text-green-600" : "text-red-500"
-                      }
+                      className="font-mono"
+                      style={{
+                        fontWeight: 700,
+                        color:
+                          sub.percentage >= 75 ? "var(--green)" : "var(--red)",
+                      }}
                     >
                       {sub.percentage}%
                     </span>
@@ -1099,7 +1368,7 @@ function TeacherSubjectPage({
 
 /* ================================================================
    MAIN PAGE
-   ================================================================ */
+================================================================ */
 export default function CodeBasedAttendence() {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -1116,102 +1385,186 @@ export default function CodeBasedAttendence() {
 
   if (showAnalytics && selectedSemester) {
     return (
-      <SemesterAnalyticsPage
-        courseId={selectedCourse._id} // for attendance API calls
-        courseName={selectedCourse.name} // for student filtering
-        semester={selectedSemester.semester}
-        onBack={() => setShowAnalytics(false)}
-      />
+      <>
+        <StyleInjector />
+        <SemesterAnalyticsPage
+          courseId={selectedCourse._id}
+          courseName={selectedCourse.name}
+          semester={selectedSemester.semester}
+          onBack={() => setShowAnalytics(false)}
+        />
+      </>
     );
   }
 
   if (selectedSubject) {
     return (
-      <TeacherSubjectPage
-        subject={selectedSubject}
-        courseId={selectedCourse._id} // for attendance API calls
-        courseName={selectedCourse.name} // for student filtering
-        semester={selectedSemester.semester}
-        onBack={() => setSelectedSubject(null)}
-      />
+      <>
+        <StyleInjector />
+        <TeacherSubjectPage
+          subject={selectedSubject}
+          courseId={selectedCourse._id}
+          courseName={selectedCourse.name}
+          semester={selectedSemester.semester}
+          onBack={() => setSelectedSubject(null)}
+        />
+      </>
     );
   }
 
+  const ListPage = ({ title, subtitle, items, onBack, renderItem }) => (
+    <>
+      <StyleInjector />
+      <div
+        className="att-root page-enter"
+        style={{ padding: "32px 40px", minHeight: "100vh" }}
+      >
+        {onBack && (
+          <button
+            className="back-btn"
+            onClick={onBack}
+            style={{ marginBottom: 20 }}
+          >
+            ← back
+          </button>
+        )}
+        <div style={{ marginBottom: 36 }}>
+          {subtitle && (
+            <p
+              style={{
+                fontFamily: MONO_FONT,
+                fontSize: 11,
+                color: "var(--muted)",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
+          <h1
+            className="font-display"
+            style={{ fontSize: 40, fontWeight: 800, letterSpacing: "-0.025em" }}
+          >
+            {title}
+          </h1>
+        </div>
+        {items.length === 0 ? (
+          <p
+            style={{
+              color: "var(--muted)",
+              fontFamily: MONO_FONT,
+              fontSize: 13,
+            }}
+          >
+            Nothing here yet
+          </p>
+        ) : (
+          <div className="card">
+            {items.map((item, i) => renderItem(item, i))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   if (selectedSemester) {
     return (
-      <div className="p-10 bg-gray-50 min-h-screen">
-        <button
-          onClick={() => setSelectedSemester(null)}
-          className="mb-6 text-gray-500 hover:text-gray-800"
-        >
-          ← Back
-        </button>
-        <h1 className="text-3xl font-bold mb-6">
-          Semester {selectedSemester.semester}
-        </h1>
-        <div
-          onClick={() => setShowAnalytics(true)}
-          className="p-5 border-2 border-gray-800 rounded-xl mb-6 cursor-pointer hover:bg-gray-900 hover:text-white transition bg-white group"
-        >
-          <span className="font-bold text-base underline group-hover:text-white">
-            Semester dashboard
-          </span>
-        </div>
-        <h2 className="text-lg font-semibold mb-3 text-gray-700">Subjects</h2>
-        {selectedSemester.subjects.map((sub, i) => (
-          <div
-            key={i}
-            onClick={() => setSelectedSubject(sub)}
-            className="p-5 border rounded-xl mb-4 cursor-pointer hover:shadow transition bg-white"
-          >
-            <span className="font-semibold text-gray-800">{sub.name}</span>
-          </div>
-        ))}
-      </div>
+      <ListPage
+        title={`Semester ${selectedSemester.semester}`}
+        subtitle={selectedCourse.name}
+        onBack={() => setSelectedSemester(null)}
+        items={["dashboard", ...selectedSemester.subjects]}
+        renderItem={(item, i) => {
+          const isDash = item === "dashboard";
+          return (
+            <div
+              key={i}
+              className="row-item"
+              onClick={() =>
+                isDash ? setShowAnalytics(true) : setSelectedSubject(item)
+              }
+            >
+              <div>
+                <p
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 15,
+                    marginBottom: isDash ? 2 : 0,
+                  }}
+                >
+                  {isDash ? "Semester Dashboard" : item.name}
+                </p>
+                {isDash && (
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: "var(--muted)",
+                      fontFamily: MONO_FONT,
+                    }}
+                  >
+                    Analytics, rankings, calendar & live view
+                  </p>
+                )}
+              </div>
+              <span style={{ color: "var(--muted)", fontSize: 18 }}>→</span>
+            </div>
+          );
+        }}
+      />
     );
   }
 
   if (selectedCourse) {
     return (
-      <div className="p-10 bg-gray-50 min-h-screen">
-        <button
-          onClick={() => setSelectedCourse(null)}
-          className="mb-6 text-gray-500 hover:text-gray-800"
-        >
-          ← Back
-        </button>
-        <h1 className="text-3xl font-bold mb-6">{selectedCourse.name}</h1>
-        {selectedCourse.semesters.map((sem, i) => (
+      <ListPage
+        title={selectedCourse.name}
+        subtitle="Select Semester"
+        onBack={() => setSelectedCourse(null)}
+        items={selectedCourse.semesters}
+        renderItem={(sem, i) => (
           <div
             key={i}
+            className="row-item"
             onClick={() => setSelectedSemester(sem)}
-            className="p-5 border rounded-xl mb-4 cursor-pointer hover:shadow transition bg-white"
           >
-            <span className="font-semibold text-gray-800">
+            <p style={{ fontWeight: 600, fontSize: 15 }}>
               Semester {sem.semester}
-            </span>
+            </p>
+            <span style={{ color: "var(--muted)", fontSize: 18 }}>→</span>
           </div>
-        ))}
-      </div>
+        )}
+      />
     );
   }
 
   return (
-    <div className="p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8">Courses</h1>
-      {courses.length === 0 ? (
-        <p className="text-gray-400">No courses found</p>
-      ) : (
-        courses.map((course) => (
-          <div
-            key={course._id}
-            onClick={() => setSelectedCourse(course)}
-            className="p-6 border rounded-xl mb-4 cursor-pointer hover:shadow transition bg-white"
-          >
-            <span className="font-semibold text-gray-800">{course.name}</span>
+    <ListPage
+      title="Courses"
+      items={courses}
+      renderItem={(course, i) => (
+        <div
+          key={course._id}
+          className="row-item"
+          onClick={() => setSelectedCourse(course)}
+        >
+          <div>
+            <p style={{ fontWeight: 600, fontSize: 15 }}>{course.name}</p>
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--muted)",
+                fontFamily: MONO_FONT,
+                marginTop: 2,
+              }}
+            >
+              {course.semesters?.length || 0} semesters
+            </p>
           </div>
-        ))
+          <span style={{ color: "var(--muted)", fontSize: 18 }}>→</span>
+        </div>
       )}
-    </div>
+    />
   );
 }
