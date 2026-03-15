@@ -1,29 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-const SUBJECTS = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "English",
-  "History",
-  "Computer Science",
-];
-
-const ALL_STUDENTS = [
-  { id: 1, name: "Riya Sharma", email: "riya@school.com", batch: "Batch A" },
-  { id: 2, name: "Aman Mehta", email: "aman@school.com", batch: "Batch A" },
-  { id: 3, name: "Priya Kaur", email: "priya@school.com", batch: "Batch B" },
-  { id: 4, name: "Rohan Das", email: "rohan@school.com", batch: "Batch B" },
-  { id: 5, name: "Sneha Patel", email: "sneha@school.com", batch: "Batch A" },
-  { id: 6, name: "Karan Verma", email: "karan@school.com", batch: "Batch C" },
-  { id: 7, name: "Pooja Singh", email: "pooja@school.com", batch: "Batch C" },
-  { id: 8, name: "Dev Sharma", email: "dev@school.com", batch: "Batch A" },
-  { id: 9, name: "Ananya Gupta", email: "ananya@school.com", batch: "Batch B" },
-  { id: 10, name: "Rahul Joshi", email: "rahul@school.com", batch: "Batch C" },
-];
+import { useState, useEffect } from "react";
 
 const BATCHES = ["All Batches", "Batch A", "Batch B", "Batch C"];
 
@@ -67,6 +44,71 @@ function genCode(subject) {
   return `${prefix}-${rand}`;
 }
 
+// ─── Custom Hook: Fetch All Students ─────────────────────────
+function useStudents() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/users")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        // API response ko normalize karo — support both array and {users: [...]} format
+        const list = Array.isArray(data) ? data : data.users || [];
+        const normalized = list.map((u, i) => ({
+          id: u.id ?? u._id ?? i + 1,
+          name: u.name ?? u.fullName ?? u.username ?? "Unknown",
+          email: u.email ?? "",
+          batch: u.batch ?? u.class ?? "Batch A",
+        }));
+        setStudents(normalized);
+      })
+      .catch((err) => {
+        console.error("Students fetch error:", err);
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { students, loading, error };
+}
+
+// ─── Custom Hook: Fetch Subjects/Courses ─────────────────────
+function useSubjects() {
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/course")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        // API response normalize karo — support different shapes
+        const list = Array.isArray(data)
+          ? data
+          : (data.courses ?? data.subjects ?? []);
+        const names = list
+          .map((c) => c.name ?? c.title ?? c.subject ?? String(c))
+          .filter(Boolean);
+        setSubjects(names);
+      })
+      .catch((err) => {
+        console.error("Subjects fetch error:", err);
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { subjects, loading, error };
+}
+
 // ─── Avatar ──────────────────────────────────────────────────
 function Avatar({ name, size = "sm" }) {
   const sizes = {
@@ -99,13 +141,48 @@ function Toggle({ value, onChange }) {
   );
 }
 
+// ─── Loading Spinner ─────────────────────────────────────────
+function Spinner({ text = "Loading..." }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl bg-white text-sm text-gray-400">
+      <svg
+        className="animate-spin w-4 h-4 text-indigo-400"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v8z"
+        />
+      </svg>
+      {text}
+    </div>
+  );
+}
+
 // ─── Student Selector ────────────────────────────────────────
-function StudentSelector({ selected, onChange }) {
+function StudentSelector({
+  selected,
+  onChange,
+  allStudents,
+  studentsLoading,
+  studentsError,
+}) {
   const [search, setSearch] = useState("");
   const [batchFilter, setBatchFilter] = useState("All Batches");
   const [isOpen, setIsOpen] = useState(false);
 
-  const filtered = ALL_STUDENTS.filter((s) => {
+  const filtered = allStudents.filter((s) => {
     const matchBatch = batchFilter === "All Batches" || s.batch === batchFilter;
     const matchSearch =
       s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -120,6 +197,30 @@ function StudentSelector({ selected, onChange }) {
         : [...selected, id],
     );
 
+  if (studentsLoading) {
+    return (
+      <div>
+        <label className="text-xs font-semibold text-gray-600 block mb-1.5">
+          👥 Students Select Karein *
+        </label>
+        <Spinner text="Students load ho rahe hain..." />
+      </div>
+    );
+  }
+
+  if (studentsError) {
+    return (
+      <div>
+        <label className="text-xs font-semibold text-gray-600 block mb-1.5">
+          👥 Students Select Karein *
+        </label>
+        <div className="px-3 py-2.5 border border-red-200 rounded-xl text-sm text-red-500 bg-red-50">
+          ⚠️ Students load nahi hue: {studentsError}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <label className="text-xs font-semibold text-gray-600 block mb-1.5">
@@ -133,7 +234,7 @@ function StudentSelector({ selected, onChange }) {
         <span className={selected.length ? "text-gray-800" : "text-gray-400"}>
           {selected.length === 0
             ? "Students choose karein..."
-            : selected.length === ALL_STUDENTS.length
+            : selected.length === allStudents.length
               ? "Sab students selected"
               : `${selected.length} student${selected.length > 1 ? "s" : ""} selected`}
         </span>
@@ -143,7 +244,7 @@ function StudentSelector({ selected, onChange }) {
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {selected.slice(0, 5).map((id) => {
-            const s = ALL_STUDENTS.find((x) => x.id === id);
+            const s = allStudents.find((x) => x.id === id);
             if (!s) return null;
             return (
               <div
@@ -216,7 +317,7 @@ function StudentSelector({ selected, onChange }) {
               ✕ Clear All
             </button>
             <span className="ml-auto text-xs text-gray-400">
-              {selected.length}/{ALL_STUDENTS.length}
+              {selected.length}/{allStudents.length}
             </span>
           </div>
           <div className="max-h-52 overflow-y-auto">
@@ -266,11 +367,152 @@ function StudentSelector({ selected, onChange }) {
   );
 }
 
+// ─── Mentor Name Dropdown ─────────────────────────────────────
+function MentorNameDropdown({
+  value,
+  onChange,
+  onError,
+  users,
+  loading,
+  error,
+}) {
+  const [search, setSearch] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const filtered = users.filter(
+    (u) =>
+      u.name.toLowerCase().includes(search.toLowerCase()) ||
+      (u.email && u.email.toLowerCase().includes(search.toLowerCase())),
+  );
+
+  const handleSelect = (name) => {
+    onChange(name);
+    setSearch("");
+    setIsOpen(false);
+    onError("");
+  };
+
+  const handleInputChange = (e) => {
+    onChange(e.target.value);
+    setSearch(e.target.value);
+    onError("");
+    setIsOpen(true);
+  };
+
+  if (loading) return <Spinner text="Users load ho rahe hain..." />;
+
+  if (error) {
+    return (
+      <input
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          onError("");
+        }}
+        placeholder="e.g. Arjun Kumar"
+        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white text-gray-800"
+      />
+    );
+  }
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <input
+          value={value}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 150)}
+          placeholder="Naam search karein ya select karein..."
+          className="w-full px-4 py-3 pr-10 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 bg-white text-gray-800"
+        />
+        {value ? (
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onChange("");
+              setSearch("");
+              setIsOpen(true);
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 font-bold text-sm"
+          >
+            ×
+          </button>
+        ) : (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none">
+            ▼
+          </span>
+        )}
+      </div>
+
+      {/* Selected user preview */}
+      {value && users.find((u) => u.name === value) && (
+        <div className="mt-2 flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2">
+          <Avatar name={value} size="sm" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-indigo-700">{value}</p>
+            <p className="text-[10px] text-gray-400 truncate">
+              {users.find((u) => u.name === value)?.email}
+            </p>
+          </div>
+          <span className="text-[10px] bg-indigo-100 text-indigo-500 font-semibold rounded px-2 py-0.5">
+            {users.find((u) => u.name === value)?.batch}
+          </span>
+        </div>
+      )}
+
+      {isOpen && (
+        <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+          <div className="max-h-52 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-4">
+                Koi user nahi mila
+              </p>
+            ) : (
+              filtered.map((u) => (
+                <div
+                  key={u.id}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(u.name);
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer border-b border-gray-50 hover:bg-indigo-50 transition-colors ${value === u.name ? "bg-indigo-50" : ""}`}
+                >
+                  <Avatar name={u.name} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {u.name}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                  </div>
+                  <span className="text-[10px] bg-indigo-50 text-indigo-500 font-semibold rounded px-2 py-0.5 whitespace-nowrap shrink-0">
+                    {u.batch}
+                  </span>
+                  {value === u.name && (
+                    <span className="text-indigo-500 text-xs font-bold shrink-0">
+                      ✓
+                    </span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+          <div className="px-3 py-2 bg-gray-50 border-t border-gray-100">
+            <p className="text-[10px] text-gray-400">
+              {users.length} users available
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── SCREEN 0 — LANDING ──────────────────────────────────────
 function Landing({ onCreateRoom, onJoinRoom }) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
       <header className="px-10 py-5 flex items-center gap-3 border-b border-gray-100">
         <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-xl">
           🏫
@@ -282,20 +524,16 @@ function Landing({ onCreateRoom, onJoinRoom }) {
           Live Room
         </span>
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-gray-500 font-medium">
-            <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-2 mb-6">
-              <span className="w-2 h-2 rounded-full bg-indigo-500" />
-              <span className="text-xs font-semibold text-indigo-700">
-                Interactive Live Classroom Platform
-              </span>
-            </div>
-          </span>
+          <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-2 mb-6">
+            <span className="w-2 h-2 rounded-full bg-indigo-500" />
+            <span className="text-xs font-semibold text-indigo-700">
+              Interactive Live Classroom Platform
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        {/* Two big cards */}
         <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 mb-16">
           <button
             type="button"
@@ -356,8 +594,8 @@ function Landing({ onCreateRoom, onJoinRoom }) {
 
         <div className="flex gap-12 text-center">
           {[
-            ["10+", "Students"],
-            ["7", "Subjects"],
+            ["Live", "Students"],
+            ["API", "Subjects"],
             ["Live", "Whiteboard"],
             ["Real-time", "Doubts"],
           ].map(([v, l]) => (
@@ -496,10 +734,22 @@ function JoinRoom({ onBack }) {
   );
 }
 
-// ─── SCREEN 1 — CREATE ROOM (Two-Column Layout) ──────────────
+// ─── SCREEN 1 — CREATE ROOM ───────────────────────────────────
 function CreateRoom({ onCreated, onBack }) {
+  // API se data fetch karo
+  const {
+    students: allStudents,
+    loading: studentsLoading,
+    error: studentsError,
+  } = useStudents();
+  const {
+    subjects,
+    loading: subjectsLoading,
+    error: subjectsError,
+  } = useSubjects();
+
   const [mentorName, setMentorName] = useState("");
-  const [subject, setSubject] = useState("Mathematics");
+  const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [duration, setDuration] = useState("60");
   const [maxStudents, setMaxStudents] = useState("30");
@@ -508,6 +758,13 @@ function CreateRoom({ onCreated, onBack }) {
   const [allowChat, setAllowChat] = useState(true);
   const [allowWb, setAllowWb] = useState(true);
   const [error, setError] = useState("");
+
+  // Jab subjects load ho jaayein, pehla subject default set karo
+  useEffect(() => {
+    if (subjects.length > 0 && !subject) {
+      setSubject(subjects[0]);
+    }
+  }, [subjects]);
 
   const handleCreate = () => {
     if (!mentorName.trim()) {
@@ -523,10 +780,10 @@ function CreateRoom({ onCreated, onBack }) {
       return;
     }
     const invitedStudents = allowAll
-      ? ALL_STUDENTS
-      : ALL_STUDENTS.filter((s) => selectedStudents.includes(s.id));
+      ? allStudents
+      : allStudents.filter((s) => selectedStudents.includes(s.id));
     onCreated({
-      code: genCode(subject),
+      code: genCode(subject || "ROOM"),
       mentorName: mentorName.trim(),
       subject,
       topic,
@@ -548,7 +805,7 @@ function CreateRoom({ onCreated, onBack }) {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
       <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-5xl max-h-[95vh] overflow-y-auto">
-        {/* ── Sticky Header ── */}
+        {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-8 py-5 flex items-center gap-4 rounded-t-3xl">
           <button
             type="button"
@@ -571,47 +828,75 @@ function CreateRoom({ onCreated, onBack }) {
           </div>
         </div>
 
-        {/* ── Error ── */}
         {error && (
           <div className="mx-8 mt-6 bg-red-50 border border-red-200 rounded-xl p-3.5 text-sm text-red-600">
             ⚠️ {error}
           </div>
         )}
 
-        {/* ── Two Column Body ── */}
         <div className="p-8 grid grid-cols-2 gap-8">
           {/* ════ LEFT COLUMN ════ */}
           <div className="flex flex-col gap-6">
-            {/* Section: Basic Info */}
             <div>
               <p className={sectionTitle}>
                 <span>👤</span> Basic Information
               </p>
               <div className="space-y-4">
                 <div>
-                  <label className={labelCls}>Aapka Naam *</label>
-                  <input
+                  <label className={labelCls}>👤 Aapka Naam *</label>
+                  <MentorNameDropdown
                     value={mentorName}
-                    onChange={(e) => {
-                      setMentorName(e.target.value);
-                      setError("");
-                    }}
-                    placeholder="e.g. Arjun Kumar"
-                    className={inputCls}
+                    onChange={setMentorName}
+                    onError={setError}
+                    users={allStudents}
+                    loading={studentsLoading}
+                    error={studentsError}
                   />
                 </div>
+
+                {/* Subject — API se fetch */}
                 <div>
-                  <label className={labelCls}>📚 Subject *</label>
-                  <select
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className={inputCls}
-                  >
-                    {SUBJECTS.map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
-                  </select>
+                  <label className={labelCls}>
+                    📚 Subject *
+                    {subjectsLoading && (
+                      <span className="ml-2 text-indigo-400 font-normal">
+                        Loading...
+                      </span>
+                    )}
+                    {subjectsError && (
+                      <span className="ml-2 text-red-400 font-normal">
+                        ({subjectsError})
+                      </span>
+                    )}
+                  </label>
+                  {subjectsLoading ? (
+                    <Spinner text="Subjects load ho rahe hain..." />
+                  ) : subjectsError ? (
+                    <input
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="Subject naam likhein"
+                      className={inputCls}
+                    />
+                  ) : (
+                    <select
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className={inputCls}
+                    >
+                      {subjects.length === 0 ? (
+                        <option value="">Koi subject nahi mila</option>
+                      ) : (
+                        subjects.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  )}
                 </div>
+
                 <div>
                   <label className={labelCls}>📖 Topic / Chapter *</label>
                   <input
@@ -627,10 +912,8 @@ function CreateRoom({ onCreated, onBack }) {
               </div>
             </div>
 
-            {/* Divider */}
             <div className="border-t border-gray-100" />
 
-            {/* Section: Class Config */}
             <div>
               <p className={sectionTitle}>
                 <span>⚙️</span> Class Configuration
@@ -661,8 +944,6 @@ function CreateRoom({ onCreated, onBack }) {
                   </select>
                 </div>
               </div>
-
-              {/* Toggles */}
               <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
                 {[
                   {
@@ -690,7 +971,6 @@ function CreateRoom({ onCreated, onBack }) {
 
           {/* ════ RIGHT COLUMN ════ */}
           <div className="flex flex-col gap-6">
-            {/* Section: Room Access */}
             <div>
               <p className={sectionTitle}>
                 <span>🎯</span> Room Access
@@ -698,7 +978,6 @@ function CreateRoom({ onCreated, onBack }) {
               <p className="text-xs text-gray-400 mb-4">
                 Kaun join kar sakta hai ye room?
               </p>
-
               <div className="grid grid-cols-2 gap-3 mb-4">
                 {[
                   {
@@ -722,7 +1001,7 @@ function CreateRoom({ onCreated, onBack }) {
                     }}
                     className={`p-4 rounded-2xl cursor-pointer border-2 transition-all ${allowAll === val ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50"}`}
                   >
-                    <div className={`text-2xl mb-2`}>{icon}</div>
+                    <div className="text-2xl mb-2">{icon}</div>
                     <p
                       className={`text-sm font-bold mb-1 ${allowAll === val ? "text-indigo-700" : "text-gray-700"}`}
                     >
@@ -749,23 +1028,31 @@ function CreateRoom({ onCreated, onBack }) {
                     setSelectedStudents(ids);
                     setError("");
                   }}
+                  allStudents={allStudents}
+                  studentsLoading={studentsLoading}
+                  studentsError={studentsError}
                 />
               ) : (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-start gap-2">
                   <span className="text-base mt-0.5">ℹ️</span>
                   <span>
-                    Room code share karo — koi bhi join kar sakta hai. Abhi{" "}
-                    <strong>{ALL_STUDENTS.length}</strong> registered students
-                    hain.
+                    Room code share karo — koi bhi join kar sakta hai.{" "}
+                    {studentsLoading ? (
+                      "Students load ho rahe hain..."
+                    ) : (
+                      <>
+                        <strong>{allStudents.length}</strong> registered
+                        students hain.
+                      </>
+                    )}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-gray-100" />
 
-            {/* Preview Card */}
+            {/* Room Preview */}
             <div>
               <p className={sectionTitle}>
                 <span>👁</span> Room Preview
@@ -779,7 +1066,9 @@ function CreateRoom({ onCreated, onBack }) {
                     <p className="font-bold text-gray-800 text-sm">
                       {mentorName || "Mentor naam..."}
                     </p>
-                    <p className="text-xs text-gray-500">{subject}</p>
+                    <p className="text-xs text-gray-500">
+                      {subject || "Subject..."}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -818,7 +1107,6 @@ function CreateRoom({ onCreated, onBack }) {
               </div>
             </div>
 
-            {/* Submit */}
             <button
               type="button"
               onClick={handleCreate}
@@ -878,7 +1166,6 @@ function RoomCreated({ room, onEnterRoom, onBack }) {
             </p>
           </div>
         </div>
-
         <div className="p-8">
           <div className="bg-indigo-50 border-2 border-dashed border-indigo-300 rounded-2xl p-6 text-center mb-5">
             <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">
@@ -888,7 +1175,6 @@ function RoomCreated({ room, onEnterRoom, onBack }) {
               {room.code}
             </p>
           </div>
-
           <div className="bg-gray-50 rounded-2xl p-4 mb-4 space-y-1">
             {summary.map(([k, v]) => (
               <div
@@ -900,7 +1186,6 @@ function RoomCreated({ room, onEnterRoom, onBack }) {
               </div>
             ))}
           </div>
-
           {!room.allowAll && room.invitedStudents.length > 0 && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
               <p className="text-xs font-bold text-emerald-700 mb-3">
@@ -921,7 +1206,6 @@ function RoomCreated({ room, onEnterRoom, onBack }) {
               </div>
             </div>
           )}
-
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -995,7 +1279,6 @@ function MentorRoom({ room, onEndRoom }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* NAVBAR */}
       <nav className="bg-white border-b border-gray-200 px-5 py-3 flex items-center gap-3 flex-wrap sticky top-0 z-20 shadow-sm">
         <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-sm">
           🏫
@@ -1045,11 +1328,8 @@ function MentorRoom({ room, onEndRoom }) {
         </div>
       </nav>
 
-      {/* BODY */}
       <div className="flex gap-4 p-4 flex-1">
-        {/* MAIN */}
         <div className="flex-1 flex flex-col gap-3 min-w-0">
-          {/* Stats */}
           <div className="grid grid-cols-4 gap-3">
             {stats.map((s) => (
               <div
@@ -1066,7 +1346,6 @@ function MentorRoom({ room, onEndRoom }) {
             ))}
           </div>
 
-          {/* Whiteboard */}
           <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex-1">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <span className="font-bold text-sm text-gray-800">
@@ -1148,7 +1427,6 @@ function MentorRoom({ room, onEndRoom }) {
             </div>
           </div>
 
-          {/* Bottom row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm max-h-80 overflow-y-auto">
               <p className="font-bold text-sm text-gray-800 mb-3">
@@ -1270,7 +1548,6 @@ function MentorRoom({ room, onEndRoom }) {
           </div>
         </div>
 
-        {/* SIDEBAR */}
         <div className="w-52 flex flex-col gap-3 shrink-0">
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             <div className="h-24 flex items-center justify-center bg-gradient-to-b from-indigo-600 to-indigo-700">
