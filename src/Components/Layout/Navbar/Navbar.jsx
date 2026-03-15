@@ -312,7 +312,7 @@ export default function Navbar() {
     <>
       {/* NAVBAR */}
       <nav
-        className={`fixed top-0 right-0 z-30 transition-all duration-300 lg:left-72 left-0 ${
+        className={`fixed top-0 right-0 z-30 transition-all duration-300 lg:left-[289px] left-0 ${
           isScrolled
             ? "bg-[#0d4255]/95 backdrop-blur-xl shadow-xl shadow-black/10"
             : "bg-gradient-to-r from-[#0d4255] via-[#0f4c5c] to-[#1e88a8]"

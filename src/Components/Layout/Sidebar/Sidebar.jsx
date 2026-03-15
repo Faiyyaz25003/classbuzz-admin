@@ -88,7 +88,7 @@ const menuGroups = [
     items: [
       { id: "announcement", name: "Announcement", icon: Bell },
       { id: "event", name: "Event", icon: CalendarDays },
-      { id: "zoomMeeting", name: "Zoom Meeting", icon: Video },
+      // { id: "zoomMeeting", name: "Zoom Meeting", icon: Video },
     ],
   },
   {
@@ -317,7 +317,7 @@ export default function Sidebar() {
           isMobile ? "" : isCollapsed ? "ml-[72px]" : "ml-72"
         }`}
       >
-        <main className="pt-16 lg:pt-20 p-6 min-h-screen bg-gray-50">
+        <main className="pt-16 lg:pt-20 py-6 min-h-screen bg-gray-50">
           {renderContent()}
         </main>
       </div>
