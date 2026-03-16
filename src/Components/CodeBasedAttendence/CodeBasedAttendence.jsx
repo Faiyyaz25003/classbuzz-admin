@@ -17,13 +17,11 @@ import {
 
 const API = "http://localhost:5000/api";
 
-/* ── Font constants — avoids broken quotes inside JSX style props ── */
 const SYSTEM_FONT =
   "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'";
 const MONO_FONT =
   "'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace";
 
-/* ── Global Styles Injection ── */
 const STYLES = `
   :root {
     --bg: #f5f5f7;
@@ -283,7 +281,6 @@ const STYLES = `
   }
 `;
 
-/* ── Style Injector ── */
 function StyleInjector() {
   useEffect(() => {
     const id = "att-styles";
@@ -297,7 +294,6 @@ function StyleInjector() {
   return null;
 }
 
-/* ── Countdown Hook ── */
 function useCountdown(expiresAt) {
   const [secondsLeft, setSecondsLeft] = useState(0);
   useEffect(() => {
@@ -321,7 +317,6 @@ function useCountdown(expiresAt) {
   return { display: `${minutes}:${seconds}`, secondsLeft };
 }
 
-/* ── Fetch Filtered Students ── */
 async function fetchFilteredStudents(courseName, semester) {
   const res = await axios.get(`${API}/users`);
   const allUsers = res.data || [];
@@ -339,7 +334,6 @@ async function fetchFilteredStudents(courseName, semester) {
   });
 }
 
-/* ── Custom Tooltip ── */
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -411,8 +405,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
   }, [courseId, semester]);
 
   const lowAttendance = percentage.filter((s) => s.percentage < 75);
-
-  // Normalize date — handles "YYYY-MM-DD", ISO timestamps, createdAt fallback
   const getDateStr = (r) => (r.date || r.createdAt || "").slice(0, 10);
 
   const monthlyMap = {};
@@ -442,7 +434,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
   const [calYear, calMonthNum] = calendarMonth.split("-").map(Number);
   const daysInMonth = new Date(calYear, calMonthNum, 0).getDate();
   const firstDay = new Date(calYear, calMonthNum - 1, 1).getDay();
-
   const today = new Date().toISOString().slice(0, 10);
   const todayPresent = allRecords.filter(
     (r) => getDateStr(r) === today && r.status === "Present",
@@ -512,7 +503,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
         </h1>
       </div>
 
-      {/* Stat Cards */}
       <div
         style={{
           display: "grid",
@@ -531,7 +521,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
         ))}
       </div>
 
-      {/* Tabs */}
       <div
         style={{ display: "flex", gap: 8, marginBottom: 28, flexWrap: "wrap" }}
       >
@@ -546,14 +535,12 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
         ))}
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="card">
           <div className="empty-state">Loading data…</div>
         </div>
       ) : (
         <>
-          {/* OVERVIEW */}
           {activeTab === "overview" && (
             <div className="card page-enter">
               <div className="card-inner">
@@ -639,7 +626,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
             </div>
           )}
 
-          {/* MONTHLY */}
           {activeTab === "monthly" && (
             <div className="card page-enter">
               <div className="card-inner">
@@ -697,7 +683,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
             </div>
           )}
 
-          {/* ALERTS */}
           {activeTab === "alerts" && (
             <div className="card page-enter">
               <div className="card-inner">
@@ -777,7 +762,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
             </div>
           )}
 
-          {/* CALENDAR */}
           {activeTab === "calendar" && (
             <div className="card page-enter">
               <div className="card-inner">
@@ -803,7 +787,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
                     onChange={(e) => setCalendarMonth(e.target.value)}
                   />
                 </div>
-
                 <div style={{ display: "flex", gap: 20, marginBottom: 20 }}>
                   {[
                     ["var(--green)", "High Attendance"],
@@ -834,7 +817,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
                     </span>
                   ))}
                 </div>
-
                 <div
                   style={{
                     display: "grid",
@@ -860,7 +842,6 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
                     ),
                   )}
                 </div>
-
                 <div
                   style={{
                     display: "grid",
@@ -928,7 +909,7 @@ function SemesterAnalyticsPage({ courseId, courseName, semester, onBack }) {
 }
 
 /* ================================================================
-   SUBJECT PAGE
+   TEACHER SUBJECT PAGE
 ================================================================ */
 function TeacherSubjectPage({
   subject,
@@ -992,22 +973,25 @@ function TeacherSubjectPage({
     fetchAttendance();
     fetchAnalytics();
   }, [fetchStudents, fetchAttendance, fetchAnalytics]);
+
   useEffect(() => {
     const id = setInterval(fetchAttendance, 5000);
     return () => clearInterval(id);
   }, [fetchAttendance]);
 
+  // ── FIXED: courseName bhi bheja ja raha hai ab ──────────────────────────
   const handleGenerateCode = async () => {
     try {
       const res = await axios.post(`${API}/attendance-code/generate`, {
         subjectId,
         subjectName: subject.name,
         courseId,
+        courseName, // ← YEH FIX HAI — cron job ke liye zaroori
         semester,
       });
       setCodeData(res.data.data);
-    } catch {
-      console.log("Generate code API missing");
+    } catch (err) {
+      console.error("Generate code error:", err.response?.data || err.message);
     }
   };
 
