@@ -1549,6 +1549,6 @@ export default function CodeBasedAttendence() {
           <span style={{ color: "var(--muted)", fontSize: 18 }}>→</span>
         </div>
       )}
-    />
+    />  
   );
 }
