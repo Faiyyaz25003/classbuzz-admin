@@ -1,538 +1,548 @@
-
-
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import {
   Video,
   BookOpen,
-  ArrowLeft,
-  Search,
-  Filter,
-  Plus,
-  X,
   Calendar,
-  Tag,
-  Play,
-  Clock,
+  Upload,
+  Link2,
+  FileText,
+  Save,
+  Trash2,
+  PlayCircle,
+  Loader2,
+  FileVideo,
+  Sparkles,
 } from "lucide-react";
 
-export default function RecordedLectures() {
-  const [lectures, setLectures] = useState({});
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+const API_BASE = "http://localhost:5000";
 
-  // Admin form states
-  const [className, setClassName] = useState("");
-  const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("");
-  const [date, setDate] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
+export default function RecordedLecture() {
+  const [courses, setCourses] = useState([]);
+  const [lectures, setLectures] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingLectures, setLoadingLectures] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Lecture filter states
-  const [filterSubject, setFilterSubject] = useState("");
-  const [filterDate, setFilterDate] = useState("");
-  const [searchTitle, setSearchTitle] = useState("");
-
-  // Class filter states
-  const [classSearch, setClassSearch] = useState("");
-  const [classSort, setClassSort] = useState("az");
-
-  // Loading state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Convert ANY YouTube URL to EMBED
-  const getEmbedUrl = (url) => {
-    if (!url) return "";
-    if (url.includes("embed")) return url;
-
-    if (url.includes("watch?v=")) {
-      const videoId = url.split("v=")[1]?.split("&")[0];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-
-    if (url.includes("youtu.be")) {
-      const videoId = url.split("youtu.be/")[1]?.split("?")[0];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-
-    return url;
-  };
-
-  // Fetch lectures
-  const fetchLectures = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetch("http://localhost:5000/api/lectures");
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch lectures");
-      }
-
-      const data = await res.json();
-
-      const grouped = {};
-      data.forEach((lec) => {
-        if (!grouped[lec.className]) grouped[lec.className] = [];
-        grouped[lec.className].push(lec);
-      });
-
-      setLectures(grouped);
-    } catch (err) {
-      setError(err.message);
-      console.error("Error fetching lectures:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [formData, setFormData] = useState({
+    department: "",
+    semester: "",
+    subject: "",
+    lectureTitle: "",
+    date: "",
+    youtubeUrl: "",
+    videoFile: null,
+    summary: "",
+  });
 
   useEffect(() => {
+    fetchCourses();
     fetchLectures();
   }, []);
 
-  // Add Lecture
-  const addLecture = async () => {
-    if (!className || !title || !videoUrl) {
-      alert("Please fill all required fields");
-      return;
-    }
-
+  const fetchCourses = async () => {
     try {
-      setLoading(true);
-      const res = await fetch("http://localhost:5000/api/lectures", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          className,
-          title,
-          subject,
-          date,
-          videoUrl,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to add lecture");
-      }
-
-      await fetchLectures();
-      setTitle("");
-      setSubject("");
-      setDate("");
-      setVideoUrl("");
-      setClassName("");
-      alert("Lecture Added ✅");
-      setShowAdminPanel(false);
-    } catch (err) {
-      alert("Error adding lecture: " + err.message);
-      console.error("Error adding lecture:", err);
+      setLoadingCourses(true);
+      const res = await axios.get(`${API_BASE}/api/course`);
+      const data = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.courses)
+          ? res.data.courses
+          : [];
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]);
     } finally {
-      setLoading(false);
+      setLoadingCourses(false);
     }
   };
 
-  // Lecture filter logic
-  const filteredLectures =
-    lectures[selectedClass]?.filter((vid) => {
-      const matchSubject = filterSubject
-        ? vid.subject?.toLowerCase() === filterSubject.toLowerCase()
-        : true;
+  const fetchLectures = async () => {
+    try {
+      setLoadingLectures(true);
+      const res = await axios.get(`${API_BASE}/api/lectures`);
+      const data = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.lectures)
+          ? res.data.lectures
+          : [];
+      setLectures(data);
+    } catch (error) {
+      console.error("Error fetching lectures:", error);
+      setLectures([]);
+    } finally {
+      setLoadingLectures(false);
+    }
+  };
 
-      const matchDate = filterDate ? vid.date === filterDate : true;
+  const departments = useMemo(() => {
+    return courses
+      .map((item) => item.name || item.department || item.className)
+      .filter(Boolean);
+  }, [courses]);
 
-      const matchTitle = searchTitle
-        ? vid.title?.toLowerCase().includes(searchTitle.toLowerCase())
-        : true;
+  const selectedCourse = useMemo(() => {
+    return courses.find(
+      (item) =>
+        (item.name || item.department || item.className) ===
+        formData.department,
+    );
+  }, [courses, formData.department]);
 
-      return matchSubject && matchDate && matchTitle;
-    }) || [];
+  const semesters = useMemo(() => {
+    if (!selectedCourse || !Array.isArray(selectedCourse.semesters)) return [];
+    return selectedCourse.semesters.map((sem) => sem.semester).filter(Boolean);
+  }, [selectedCourse]);
 
-  // Subjects dropdown
-  const subjects =
-    lectures[selectedClass]
-      ?.map((v) => v.subject)
-      .filter(Boolean)
-      .filter((v, i, a) => a.indexOf(v) === i) || [];
+  const subjects = useMemo(() => {
+    if (!selectedCourse || !formData.semester) return [];
 
-  // Filtered + Sorted Classes
-  const filteredClasses = Object.keys(lectures)
-    .filter((cls) =>
-      classSearch ? cls.toLowerCase().includes(classSearch.toLowerCase()) : true
-    )
-    .sort((a, b) =>
-      classSort === "az" ? a.localeCompare(b) : b.localeCompare(a)
+    const selectedSemesterObj = selectedCourse.semesters?.find(
+      (sem) => String(sem.semester) === String(formData.semester),
     );
 
-  // Stats
-  const totalClasses = Object.keys(lectures).length;
-  const totalLectures = Object.values(lectures).flat().length;
+    if (!selectedSemesterObj) return [];
 
-  if (loading && Object.keys(lectures).length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-semibold">Loading lectures...</p>
-        </div>
-      </div>
-    );
-  }
+    const semesterSubjects = selectedSemesterObj.subjects || [];
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-2xl shadow-xl">
-          <X className="mx-auto mb-4 text-red-500" size={64} />
-          <p className="text-red-600 font-semibold mb-2">Error: {error}</p>
-          <p className="text-gray-500 text-sm mb-4">
-            Make sure your backend is running on http://localhost:5000
-          </p>
-          <button
-            onClick={fetchLectures}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+    return semesterSubjects
+      .map((sub) => {
+        if (typeof sub === "string") return sub;
+        return sub.name || sub.subjectName || sub.title;
+      })
+      .filter(Boolean);
+  }, [selectedCourse, formData.semester]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === "department") {
+      setFormData((prev) => ({
+        ...prev,
+        department: value,
+        semester: "",
+        subject: "",
+      }));
+      return;
+    }
+
+    if (name === "semester") {
+      setFormData((prev) => ({
+        ...prev,
+        semester: value,
+        subject: "",
+      }));
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      videoFile: e.target.files[0] || null,
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      department: "",
+      semester: "",
+      subject: "",
+      lectureTitle: "",
+      date: "",
+      youtubeUrl: "",
+      videoFile: null,
+      summary: "",
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setSaving(true);
+
+      const payload = new FormData();
+      payload.append("department", formData.department);
+      payload.append("semester", formData.semester);
+      payload.append("subject", formData.subject);
+      payload.append("lectureTitle", formData.lectureTitle);
+      payload.append("date", formData.date);
+      payload.append("youtubeUrl", formData.youtubeUrl);
+      payload.append("summary", formData.summary);
+
+      if (formData.videoFile) {
+        payload.append("videoFile", formData.videoFile);
+      }
+
+      await axios.post(`${API_BASE}/api/lectures`, payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Lecture saved successfully");
+      resetForm();
+      fetchLectures();
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteLecture = async (id) => {
+    try {
+      await axios.delete(`${API_BASE}/api/lectures/${id}`);
+      alert("Lecture deleted successfully");
+      fetchLectures();
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert(error?.response?.data?.message || "Delete failed");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Header */}
-      <div className="bg-white shadow-lg border-b-4 border-indigo-500">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-3 rounded-xl">
-              <Video className="text-white" size={28} />
-            </div>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="rounded-2xl bg-blue-100 p-3 text-blue-600">
+            <Video className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 md:text-3xl">
+              Add Recorded Lecture
+            </h1>
+            <p className="text-sm text-gray-500">
+              Upload video details with department, semester and subject
+            </p>
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-3xl bg-white p-6 shadow-lg md:p-8"
+        >
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] bg-clip-text text-transparent">
-                EduStream
-              </h1>
-              <p className="text-sm text-gray-500">Learn Anytime, Anywhere</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowAdminPanel(!showAdminPanel)}
-            className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
-          >
-            {showAdminPanel ? <X size={20} /> : <Plus size={20} />}
-            {showAdminPanel ? "Close" : "Add Lecture"}
-          </button>
-        </div>
-      </div>
-
-      {/* Admin Panel */}
-      {showAdminPanel && (
-        <div className="max-w-4xl mx-auto px-6 py-6">
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-6">
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Plus /> Upload New Lecture
-              </h2>
-              <p className="text-indigo-100 text-sm mt-1">
-                Add a new video lecture to the platform
-              </p>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Class Name *
-                </label>
-                <input
-                  placeholder="e.g., Mathematics Grade 10"
-                  className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={className}
-                  onChange={(e) => setClassName(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Lecture Title *
-                </label>
-                <input
-                  placeholder="e.g., Introduction to Algebra"
-                  className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Subject
-                  </label>
-                  <input
-                    placeholder="e.g., Algebra"
-                    className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  YouTube Video URL *
-                </label>
-                <input
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                />
-              </div>
-
-              <button
-                onClick={addLecture}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] text-white px-6 py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <Plus size={20} />
-                    Add Lecture
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CLASS FILTER BAR */}
-      {!selectedClass && (
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="text-indigo-600" size={20} />
-              <h3 className="font-bold text-gray-800">Filter Classes</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Class
+              </label>
               <div className="relative">
-                <Search
-                  className="absolute left-3 top-3.5 text-gray-400"
-                  size={20}
-                />
-                <input
-                  placeholder="Search class..."
-                  className="w-full border-2 border-gray-200 p-3 pl-10 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={classSearch}
-                  onChange={(e) => setClassSearch(e.target.value)}
-                />
-              </div>
-
-              <select
-                className="border-2 border-gray-200 p-3 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                value={classSort}
-                onChange={(e) => setClassSort(e.target.value)}
-              >
-                <option value="az">Sort A–Z</option>
-                <option value="za">Sort Z–A</option>
-              </select>
-
-              <button
-                onClick={() => {
-                  setClassSearch("");
-                  setClassSort("az");
-                }}
-                className="bg-gray-100 hover:bg-gray-200 rounded-xl px-4 font-semibold transition"
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Class List */}
-      {!selectedClass && (
-        <div className="max-w-7xl mx-auto px-6 pb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredClasses.length === 0 && (
-              <div className="col-span-full text-center py-16">
-                <BookOpen className="mx-auto mb-4 text-gray-300" size={64} />
-                <p className="text-gray-500 text-lg">No classes found</p>
-              </div>
-            )}
-
-            {filteredClasses.map((cls) => (
-              <div
-                key={cls}
-                onClick={() => setSelectedClass(cls)}
-                className="group bg-white rounded-2xl shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:-translate-y-2 overflow-hidden"
-              >
-                <div className="bg-gradient-to-r from-[#1e7a8c] to-[#2596ad] p-8 flex items-center justify-center">
-                  <BookOpen
-                    className="text-white group-hover:scale-110 transition"
-                    size={48}
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2">
-                    {cls}
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Play size={16} />
-                    <span>{lectures[cls].length} Lectures</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Videos + Filters */}
-      {selectedClass && (
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <button
-            onClick={() => setSelectedClass(null)}
-            className="mb-6 flex gap-2 items-center text-indigo-600 font-semibold hover:text-indigo-800 transition"
-          >
-            <ArrowLeft /> Back to Classes
-          </button>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="text-indigo-600" size={20} />
-              <h3 className="font-bold text-gray-800">Filter Lectures</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-3.5 text-gray-400"
-                  size={20}
-                />
-                <input
-                  placeholder="Search by title"
-                  className="w-full border-2 border-gray-200 p-3 pl-10 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={searchTitle}
-                  onChange={(e) => setSearchTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="relative">
-                <Tag
-                  className="absolute left-3 top-3.5 text-gray-400"
-                  size={20}
-                />
+                <BookOpen className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 <select
-                  className="w-full border-2 border-gray-200 p-3 pl-10 rounded-xl focus:border-indigo-500 focus:outline-none transition appearance-none"
-                  value={filterSubject}
-                  onChange={(e) => setFilterSubject(e.target.value)}
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+                  required
                 >
-                  <option value="">All Subjects</option>
-                  {subjects.map((sub) => (
-                    <option key={sub} value={sub}>
+                  <option value="">
+                    {loadingCourses
+                      ? "Loading departments..."
+                      : "Select Department"}
+                  </option>
+                  {departments.map((dept, index) => (
+                    <option key={index} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Semester
+              </label>
+              <div className="relative">
+                <BookOpen className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <select
+                  name="semester"
+                  value={formData.semester}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select Semester</option>
+                  {semesters.map((sem, index) => (
+                    <option key={index} value={sem}>
+                      Semester {sem}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Lecture Title
+              </label>
+              <input
+                type="text"
+                name="lectureTitle"
+                value={formData.lectureTitle}
+                onChange={handleChange}
+                placeholder="Enter lecture title"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Subject
+              </label>
+              <div className="relative">
+                <BookOpen className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <select
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select Subject</option>
+                  {subjects.map((sub, index) => (
+                    <option key={index} value={sub}>
                       {sub}
                     </option>
                   ))}
                 </select>
               </div>
+            </div>
 
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Date
+              </label>
               <div className="relative">
-                <Calendar
-                  className="absolute left-3 top-3.5 text-gray-400"
-                  size={20}
-                />
+                <Calendar className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 <input
                   type="date"
-                  className="w-full border-2 border-gray-200 p-3 pl-10 rounded-xl focus:border-indigo-500 focus:outline-none transition"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+                  required
                 />
               </div>
+            </div>
 
-              <button
-                onClick={() => {
-                  setSearchTitle("");
-                  setFilterSubject("");
-                  setFilterDate("");
-                }}
-                className="bg-gray-100 hover:bg-gray-200 rounded-xl px-4 font-semibold transition"
-              >
-                Clear Filters
-              </button>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                YouTube Video URL
+              </label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <input
+                  type="url"
+                  name="youtubeUrl"
+                  value={formData.youtubeUrl}
+                  onChange={handleChange}
+                  placeholder="https://youtube.com/..."
+                  className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Videos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredLectures.length === 0 && (
-              <div className="col-span-full text-center py-16">
-                <Video className="mx-auto mb-4 text-gray-300" size={64} />
-                <p className="text-gray-500 text-lg">No lectures found</p>
-              </div>
-            )}
+          <div className="mt-6">
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Choose Video
+            </label>
+            <label className="flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-gray-600 transition hover:border-blue-500 hover:bg-blue-50">
+              <Upload className="h-5 w-5" />
+              <span>
+                {formData.videoFile
+                  ? formData.videoFile.name
+                  : "Click to upload video file"}
+              </span>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Video upload karoge to AI automatically transcript aur summary
+              banane ki koshish karega.
+            </p>
+          </div>
 
-            {filteredLectures.map((vid) => (
-              <div
-                key={vid._id}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all hover:-translate-y-1"
-              >
-                <div className="aspect-video relative overflow-hidden bg-gray-900">
-                  <iframe
-                    src={`${getEmbedUrl(
-                      vid.videoUrl
-                    )}?controls=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1&playsinline=1`}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+          <div className="mt-6">
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Summary of Video
+            </label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              <textarea
+                name="summary"
+                value={formData.summary}
+                onChange={handleChange}
+                rows={8}
+                placeholder="Leave empty for AI-generated summary"
+                className="w-full rounded-2xl border border-gray-300 py-3 pl-10 pr-4 outline-none transition focus:border-blue-500"
+              />
+            </div>
+          </div>
 
-                <div className="p-6">
-                  <h3 className="font-bold text-xl text-gray-800 mb-3">
-                    {vid.title}
-                  </h3>
+          <div className="mt-8 flex justify-end">
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Generating summary...
+                </>
+              ) : (
+                <>
+                  <Save className="h-5 w-5" />
+                  Save Lecture
+                </>
+              )}
+            </button>
+          </div>
+        </form>
 
-                  <div className="flex flex-wrap gap-2">
-                    {vid.subject && (
-                      <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                        <Tag size={14} />
-                        {vid.subject}
-                      </span>
+        <div className="mt-10 rounded-3xl bg-white p-6 shadow-lg md:p-8">
+          <h2 className="mb-6 text-2xl font-bold text-gray-800">
+            Saved Lectures
+          </h2>
+
+          {loadingLectures ? (
+            <div className="flex items-center gap-2 text-gray-500">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading lectures...
+            </div>
+          ) : lectures.length === 0 ? (
+            <p className="text-gray-500">No lectures found.</p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {lectures.map((lecture) => (
+                <div
+                  key={lecture._id}
+                  className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">
+                        {lecture.lectureTitle || "Untitled Lecture"}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {lecture.department || "No Department"} | Semester{" "}
+                        {lecture.semester || "N/A"}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLecture(lecture._id)}
+                      className="rounded-xl bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <p className="mb-2 text-sm text-gray-700">
+                    <span className="font-semibold">Subject:</span>{" "}
+                    {lecture.subject || "No subject available"}
+                  </p>
+
+                  <p className="mb-3 text-sm text-gray-700">
+                    <span className="font-semibold">Date:</span>{" "}
+                    {lecture.date || "No date available"}
+                  </p>
+
+                  {lecture.summaryGeneratedByAI && (
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      AI Summary Generated
+                    </div>
+                  )}
+
+                  <div className="mb-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                      <h4 className="text-sm font-semibold text-gray-800">
+                        Summary
+                      </h4>
+                    </div>
+
+                    <p className="whitespace-pre-line text-sm leading-6 text-gray-700">
+                      {lecture.summary?.trim()
+                        ? lecture.summary
+                        : "Summary not available for this lecture."}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {lecture.youtubeUrl && (
+                      <a
+                        href={lecture.youtubeUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                      >
+                        <PlayCircle className="h-4 w-4" />
+                        YouTube
+                      </a>
                     )}
 
-                    {vid.date && (
-                      <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                        <Clock size={14} />
-                        {new Date(vid.date).toLocaleDateString()}
-                      </span>
+                    {lecture.videoFile && (
+                      <a
+                        href={`${API_BASE}/${lecture.videoFile}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-gray-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-900"
+                      >
+                        <FileVideo className="h-4 w-4" />
+                        View Video
+                      </a>
                     )}
                   </div>
+
+                  {lecture.videoFile && (
+                    <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200">
+                      <video
+                        controls
+                        className="h-56 w-full bg-black object-cover"
+                        src={`${API_BASE}/${lecture.videoFile}`}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  )}
+
+                  {lecture.transcript?.trim() && (
+                    <details className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                      <summary className="cursor-pointer text-sm font-medium text-blue-600">
+                        View Transcript
+                      </summary>
+                      <div className="mt-3 max-h-48 overflow-y-auto whitespace-pre-line text-sm text-gray-700">
+                        {lecture.transcript}
+                      </div>
+                    </details>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
