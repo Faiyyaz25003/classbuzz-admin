@@ -44,6 +44,7 @@ import Announcement from "@/Components/Announcement/Announcement";
 import Notes from "@/Components/Notes/Notes";
 import CodeBasedAttendence from "@/Components/CodeBasedAttendence/CodeBasedAttendence";
 import ZoomMeeting from "@/Components/ZoomMeeting/ZoomMeeting";
+import Event from "@/Components/Event/Event";
 
 const menuGroups = [
   {
@@ -164,6 +165,8 @@ export default function Sidebar() {
         return <Assignment />;
       case "libraryManagement":
         return <LibraryManagement />;
+      case "event":
+        return <Event />;
       default:
         return <Fees />;
     }

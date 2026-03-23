@@ -44,7 +44,7 @@ export default function Login() {
       setMessage(res.data.message || "Admin login successful");
 
       setTimeout(() => {
-        router.push("/Sidebar");
+        router.push("/dashboard");
       }, 1000);
     } catch (error) {
       setSuccess(false);

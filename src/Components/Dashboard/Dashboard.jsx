@@ -140,7 +140,7 @@ function SectionCard({ title, badge, onViewAll, children }) {
 }
 
 // ─── main component ─────────────────────────────────────────────
-export default function AdminDashboard() {
+export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [fees, setFees] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
