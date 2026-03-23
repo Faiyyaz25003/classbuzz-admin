@@ -19,7 +19,7 @@ const Leave = () => {
       alert(`Leave ${status} successfully!`);
       fetchLeaves();
     } catch (error) {
-      console.error("Error updating status:", error);
+        console.error("Error updating status:", error);
       alert("Failed to update leave status.");
     }
   };

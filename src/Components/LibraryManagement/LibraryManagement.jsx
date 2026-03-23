@@ -959,7 +959,7 @@ function BookCard({ book, onClick, onDelete }) {
       </div>
       <div>
         {/* ✅ CHANGED: Subject as main title, Book name as subtitle tag */}
-        <div
+        <div  
           style={{
             color: "#0f172a",
             fontWeight: 700,

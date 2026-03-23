@@ -45,6 +45,7 @@ import Notes from "@/Components/Notes/Notes";
 import CodeBasedAttendence from "@/Components/CodeBasedAttendence/CodeBasedAttendence";
 import ZoomMeeting from "@/Components/ZoomMeeting/ZoomMeeting";
 import Event from "@/Components/Event/Event";
+import Report from "@/Components/Report/Report";
 
 const menuGroups = [
   {
@@ -89,6 +90,7 @@ const menuGroups = [
     items: [
       { id: "announcement", name: "Announcement", icon: Bell },
       { id: "event", name: "Event", icon: CalendarDays },
+      { id: "report", name: "Report", icon: CalendarDays },
       // { id: "zoomMeeting", name: "Zoom Meeting", icon: Video },
     ],
   },
@@ -167,6 +169,8 @@ export default function Sidebar() {
         return <LibraryManagement />;
       case "event":
         return <Event />;
+      case "report":
+        return <Report />;
       default:
         return <Fees />;
     }
