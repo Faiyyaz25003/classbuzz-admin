@@ -7,8 +7,9 @@ const page = () => {
   return (
       <div>
           <Sidebar />
-          <Navbar/>
-       <Dashboard/>
+      <Navbar />
+     
+       {/* <Dashboard/> */}
     </div>
   )
 }

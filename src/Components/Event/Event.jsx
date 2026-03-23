@@ -31,6 +31,41 @@ const gameTypeIcons = {
   other: "🎮",
 };
 
+// Leaderboard: games array se user stats nikalna
+function buildLeaderboard(games) {
+  const userMap = {};
+
+  games.forEach((game) => {
+    (game.assignedUsers || []).forEach((u) => {
+      const key = u.email || u.name;
+      if (!key) return;
+      if (!userMap[key]) {
+        userMap[key] = {
+          name: u.name,
+          email: u.email,
+          totalAssigned: 0,
+          accessed: 0,
+        };
+      }
+      userMap[key].totalAssigned += 1;
+      if (u.hasAccessed) userMap[key].accessed += 1;
+    });
+  });
+
+  return Object.values(userMap)
+    .map((u) => ({
+      ...u,
+      score: u.accessed,
+      completion:
+        u.totalAssigned > 0
+          ? Math.round((u.accessed / u.totalAssigned) * 100)
+          : 0,
+    }))
+    .sort((a, b) => b.score - a.score || b.completion - a.completion);
+}
+
+const rankMedals = ["🥇", "🥈", "🥉"];
+
 export default function Event() {
   const [games, setGames] = useState([]);
   const [users, setUsers] = useState([]);
@@ -39,6 +74,7 @@ export default function Event() {
   const [selectedGame, setSelectedGame] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState("games"); // "games" | "leaderboard"
 
   const [form, setForm] = useState({
     title: "",
@@ -153,6 +189,8 @@ export default function Event() {
     }));
   };
 
+  const leaderboard = buildLeaderboard(games);
+
   return (
     <div className="min-h-screen bg-[#080814] text-white font-sans">
       {/* Toast */}
@@ -184,6 +222,7 @@ export default function Event() {
             onClick={() => {
               resetForm();
               setShowForm(true);
+              setActiveTab("games");
             }}
             className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-500 hover:opacity-90 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 shadow-lg shadow-violet-500/20"
           >
@@ -405,124 +444,305 @@ export default function Event() {
           ))}
         </div>
 
-        {/* Games Grid */}
-        <div>
-          <h2 className="text-lg font-bold mb-5 text-white/80">All Games</h2>
-          {games.length === 0 ? (
-            <div className="text-center py-24 text-white/20">
-              <div className="text-6xl mb-4">🎮</div>
-              <p className="text-lg">There is no game right now.</p>
-              <p className="text-sm mt-1">create a new game</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {games.map((game) => (
-                <div
-                  key={game._id}
-                  className="group bg-[#0d0d1f] border border-white/10 rounded-2xl overflow-hidden hover:border-violet-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10 cursor-pointer"
-                  onClick={() =>
-                    setSelectedGame(
-                      selectedGame?._id === game._id ? null : game,
-                    )
-                  }
-                >
-                  {/* Game Card Image/Banner */}
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab("games")}
+            className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              activeTab === "games"
+                ? "bg-gradient-to-r from-violet-600 to-cyan-500 text-white shadow-lg shadow-violet-500/20"
+                : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20"
+            }`}
+          >
+            🎮 All Games
+          </button>
+          <button
+            onClick={() => setActiveTab("leaderboard")}
+            className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              activeTab === "leaderboard"
+                ? "bg-gradient-to-r from-yellow-500 to-amber-500 text-white shadow-lg shadow-yellow-500/20"
+                : "bg-white/5 border border-white/10 text-white/50 hover:text-white hover:border-white/20"
+            }`}
+          >
+            🏆 Leaderboard
+          </button>
+        </div>
+
+        {/* Games Tab */}
+        {activeTab === "games" && (
+          <div>
+            {games.length === 0 ? (
+              <div className="text-center py-24 text-white/20">
+                <div className="text-6xl mb-4">🎮</div>
+                <p className="text-lg">There is no game right now.</p>
+                <p className="text-sm mt-1">create a new game</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {games.map((game) => (
                   <div
-                    className={`h-32 bg-gradient-to-br ${categoryColors[game.category] || categoryColors.Other} relative overflow-hidden`}
+                    key={game._id}
+                    className="group bg-[#0d0d1f] border border-white/10 rounded-2xl overflow-hidden hover:border-violet-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/10 cursor-pointer"
+                    onClick={() =>
+                      setSelectedGame(
+                        selectedGame?._id === game._id ? null : game,
+                      )
+                    }
                   >
-                    {game.imageUrl ? (
-                      <img
-                        src={game.imageUrl}
-                        alt={game.title}
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">
-                        {gameTypeIcons[game.gameType] || "🎮"}
+                    {/* Game Card Image/Banner */}
+                    <div
+                      className={`h-32 bg-gradient-to-br ${categoryColors[game.category] || categoryColors.Other} relative overflow-hidden`}
+                    >
+                      {game.imageUrl ? (
+                        <img
+                          src={game.imageUrl}
+                          alt={game.title}
+                          className="w-full h-full object-cover opacity-80"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-5xl opacity-60">
+                          {gameTypeIcons[game.gameType] || "🎮"}
+                        </div>
+                      )}
+                      <div className="absolute top-3 right-3 bg-black/40 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                        {game.category}
                       </div>
-                    )}
-                    <div className="absolute top-3 right-3 bg-black/40 backdrop-blur px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                      {game.category}
-                    </div>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="font-bold text-sm mb-1 truncate">
-                      {game.title}
-                    </h3>
-                    <p className="text-white/40 text-xs line-clamp-2 mb-3">
-                      {game.description}
-                    </p>
-
-                    <div className="flex items-center justify-between text-xs text-white/30">
-                      <span>
-                        {gameTypeIcons[game.gameType]} {game.gameType}
-                      </span>
-                      <span>👥 {game.assignedUsers?.length || 0} users</span>
                     </div>
 
-                    {/* Expand: Assigned Users */}
-                    {selectedGame?._id === game._id && (
+                    <div className="p-4">
+                      <h3 className="font-bold text-sm mb-1 truncate">
+                        {game.title}
+                      </h3>
+                      <p className="text-white/40 text-xs line-clamp-2 mb-3">
+                        {game.description}
+                      </p>
+
+                      <div className="flex items-center justify-between text-xs text-white/30">
+                        <span>
+                          {gameTypeIcons[game.gameType]} {game.gameType}
+                        </span>
+                        <span>👥 {game.assignedUsers?.length || 0} users</span>
+                      </div>
+
+                      {/* Expand: Assigned Users */}
+                      {selectedGame?._id === game._id && (
+                        <div
+                          className="mt-4 pt-4 border-t border-white/10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-[11px] font-semibold text-white/50 uppercase tracking-widest mb-2">
+                            Assigned Users
+                          </p>
+                          {game.assignedUsers?.length === 0 ? (
+                            <p className="text-white/30 text-xs">
+                              Koi user assign nahi
+                            </p>
+                          ) : (
+                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                              {game.assignedUsers.map((u, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center gap-2 text-xs"
+                                >
+                                  <div className="w-6 h-6 rounded-full bg-violet-500/30 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                                    {u.name?.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{u.name}</p>
+                                    <p className="text-white/30">{u.email}</p>
+                                  </div>
+                                  <span
+                                    className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${
+                                      u.hasAccessed
+                                        ? "bg-green-500/20 text-green-400"
+                                        : "bg-yellow-500/20 text-yellow-400"
+                                    }`}
+                                  >
+                                    {u.hasAccessed ? "✓" : "Pending"}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div
-                        className="mt-4 pt-4 border-t border-white/10"
+                        className="flex gap-2 mt-4"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <p className="text-[11px] font-semibold text-white/50 uppercase tracking-widest mb-2">
-                          Assigned Users
-                        </p>
-                        {game.assignedUsers?.length === 0 ? (
-                          <p className="text-white/30 text-xs">
-                            Koi user assign nahi
-                          </p>
-                        ) : (
-                          <div className="space-y-2 max-h-32 overflow-y-auto">
-                            {game.assignedUsers.map((u, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-2 text-xs"
-                              >
-                                <div className="w-6 h-6 rounded-full bg-violet-500/30 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                                  {u.name?.charAt(0)}
-                                </div>
-                                <div>
-                                  <p className="font-medium">{u.name}</p>
-                                  <p className="text-white/30">{u.email}</p>
-                                </div>
-                                <span
-                                  className={`ml-auto text-[10px] px-2 py-0.5 rounded-full ${u.hasAccessed ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}
-                                >
-                                  {u.hasAccessed ? "✓" : "Pending"}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <button
+                          onClick={() => handleEdit(game)}
+                          className="flex-1 py-2 rounded-lg bg-white/5 hover:bg-violet-500/20 hover:text-violet-300 text-xs font-semibold transition border border-white/10 hover:border-violet-500/40"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(game._id)}
+                          className="flex-1 py-2 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-xs font-semibold transition border border-white/10 hover:border-red-500/40"
+                        >
+                          🗑️ Delete
+                        </button>
                       </div>
-                    )}
-
-                    <div
-                      className="flex gap-2 mt-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => handleEdit(game)}
-                        className="flex-1 py-2 rounded-lg bg-white/5 hover:bg-violet-500/20 hover:text-violet-300 text-xs font-semibold transition border border-white/10 hover:border-violet-500/40"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(game._id)}
-                        className="flex-1 py-2 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-xs font-semibold transition border border-white/10 hover:border-red-500/40"
-                      >
-                        🗑️ Delete
-                      </button>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Leaderboard Tab */}
+        {activeTab === "leaderboard" && (
+          <div>
+            {leaderboard.length === 0 ? (
+              <div className="text-center py-24 text-white/20">
+                <div className="text-6xl mb-4">🏆</div>
+                <p className="text-lg">Abhi koi data nahi hai.</p>
+                <p className="text-sm mt-1">
+                  Pehle games banao aur users assign karo
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Top 3 podium */}
+                {leaderboard.length >= 3 && (
+                  <div className="grid grid-cols-3 gap-4 mb-8">
+                    {[leaderboard[1], leaderboard[0], leaderboard[2]].map(
+                      (user, podiumIndex) => {
+                        if (!user) return <div key={podiumIndex} />;
+                        const realRank = leaderboard.indexOf(user);
+                        const heights = ["h-24", "h-32", "h-20"];
+                        return (
+                          <div
+                            key={user.email}
+                            className="flex flex-col items-center gap-2"
+                          >
+                            <div className="text-2xl">
+                              {rankMedals[realRank]}
+                            </div>
+                            <div
+                              className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold ${
+                                realRank === 0
+                                  ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-black"
+                                  : realRank === 1
+                                    ? "bg-gradient-to-br from-slate-300 to-slate-400 text-black"
+                                    : "bg-gradient-to-br from-amber-600 to-amber-700 text-white"
+                              }`}
+                            >
+                              {user.name?.charAt(0).toUpperCase()}
+                            </div>
+                            <p className="text-xs font-bold text-center truncate w-full text-center">
+                              {user.name}
+                            </p>
+                            <div
+                              className={`w-full ${heights[podiumIndex]} rounded-t-xl flex flex-col items-center justify-center gap-1 ${
+                                realRank === 0
+                                  ? "bg-gradient-to-b from-yellow-500/30 to-yellow-500/10 border border-yellow-500/30"
+                                  : realRank === 1
+                                    ? "bg-gradient-to-b from-slate-400/20 to-slate-400/5 border border-slate-400/20"
+                                    : "bg-gradient-to-b from-amber-600/20 to-amber-600/5 border border-amber-600/20"
+                              }`}
+                            >
+                              <span className="text-lg font-bold">
+                                {user.score}
+                              </span>
+                              <span className="text-[10px] text-white/40">
+                                games played
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                )}
+
+                {/* Full table */}
+                <div className="bg-[#0d0d1f] border border-white/10 rounded-2xl overflow-hidden">
+                  <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white/80">
+                      Full Rankings
+                    </h3>
+                    <span className="text-xs text-white/30">
+                      {leaderboard.length} players
+                    </span>
+                  </div>
+                  <div className="divide-y divide-white/5">
+                    {leaderboard.map((user, idx) => (
+                      <div
+                        key={user.email}
+                        className={`flex items-center gap-4 px-6 py-4 transition hover:bg-white/3 ${
+                          idx === 0 ? "bg-yellow-500/5" : ""
+                        }`}
+                      >
+                        {/* Rank */}
+                        <div className="w-8 text-center">
+                          {idx < 3 ? (
+                            <span className="text-lg">{rankMedals[idx]}</span>
+                          ) : (
+                            <span className="text-sm font-bold text-white/30">
+                              #{idx + 1}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Avatar */}
+                        <div
+                          className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                            idx === 0
+                              ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-black"
+                              : "bg-white/10 text-white"
+                          }`}
+                        >
+                          {user.name?.charAt(0).toUpperCase()}
+                        </div>
+
+                        {/* Name & Email */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-white/30 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="hidden sm:flex flex-col items-end gap-1 w-32">
+                          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                idx === 0
+                                  ? "bg-gradient-to-r from-yellow-400 to-amber-500"
+                                  : "bg-gradient-to-r from-violet-500 to-cyan-500"
+                              }`}
+                              style={{ width: `${user.completion}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-white/30">
+                            {user.completion}% completion
+                          </span>
+                        </div>
+
+                        {/* Score */}
+                        <div className="text-right">
+                          <p className="text-sm font-bold">
+                            {user.score}
+                            <span className="text-white/30 font-normal text-xs">
+                              /{user.totalAssigned}
+                            </span>
+                          </p>
+                          <p className="text-[10px] text-white/30">played</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
