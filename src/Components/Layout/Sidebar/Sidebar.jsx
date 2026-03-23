@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -23,6 +24,7 @@ import {
   ClipboardList,
   CalendarDays,
   Mic2,
+  MessageSquare,
 } from "lucide-react";
 
 import Dashboard from "@/Components/Dashboard/Dashboard";
@@ -91,7 +93,6 @@ const menuGroups = [
       { id: "announcement", name: "Announcement", icon: Bell },
       { id: "event", name: "Event", icon: CalendarDays },
       { id: "report", name: "Report", icon: CalendarDays },
-      // { id: "zoomMeeting", name: "Zoom Meeting", icon: Video },
     ],
   },
   {
@@ -111,6 +112,8 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 1024;
@@ -125,6 +128,10 @@ export default function Sidebar() {
   const handleLinkClick = (id) => {
     setCurrentView(id);
     if (isMobile) setIsMobileOpen(false);
+  };
+
+  const handleChatClick = () => {
+    router.push("/chatMain");
   };
 
   const renderContent = () => {
@@ -326,6 +333,14 @@ export default function Sidebar() {
       >
         <main className="pt-16 lg:pt-20 py-6 min-h-screen bg-gray-50">
           {renderContent()}
+
+          {/* Floating Chat Button */}
+          <button
+            onClick={handleChatClick}
+            className="fixed bottom-6 right-6 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition z-50"
+          >
+            <MessageSquare size={24} />
+          </button>
         </main>
       </div>
     </div>
