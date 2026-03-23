@@ -300,7 +300,7 @@ export default function Event() {
               {!editMode && (
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-3">
-                    Users Assign Karo{" "}
+                    Assign Users{" "}
                     <span className="text-violet-400">
                       ({form.assignedUserIds.length} selected)
                     </span>
@@ -308,7 +308,7 @@ export default function Event() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-52 overflow-y-auto pr-1">
                     {users.length === 0 && (
                       <p className="text-white/30 text-sm col-span-4">
-                        Users load nahi hue...
+                        Users are not loaded...
                       </p>
                     )}
                     {users.map((user) => {
@@ -343,7 +343,7 @@ export default function Event() {
                   </div>
                   {form.assignedUserIds.length > 0 && (
                     <p className="text-xs text-cyan-400 mt-2">
-                      📧 In sabko email milega unique password ke saath
+                      📧 everyone get a email in their mail id
                     </p>
                   )}
                 </div>
@@ -411,8 +411,8 @@ export default function Event() {
           {games.length === 0 ? (
             <div className="text-center py-24 text-white/20">
               <div className="text-6xl mb-4">🎮</div>
-              <p className="text-lg">Koi game nahi hai abhi</p>
-              <p className="text-sm mt-1">New Game button se banao</p>
+              <p className="text-lg">There is no game right now.</p>
+              <p className="text-sm mt-1">create a new game</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
